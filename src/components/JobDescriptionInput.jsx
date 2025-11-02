@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, X, Loader2 } from 'lucide-react';
+import { FileText, X, Loader2, Sparkles } from 'lucide-react';
 
 export default function JobDescriptionInput({ onSubmit, isLoading }) {
   const [jobDescription, setJobDescription] = useState('');
