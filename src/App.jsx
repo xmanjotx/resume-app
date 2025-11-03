@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import TopBar from './components/TopBar';
+import HeroFeatureStrip from './components/HeroFeatureStrip';
+import ProcessSteps from './components/ProcessSteps';
 import JobDescriptionInput from './components/JobDescriptionInput';
 import SmartAnalysis from './components/SmartAnalysis';
-import LoadingState from './components/LoadingState';
 import ProgressBar from './components/ProgressBar';
 import ResultsDisplay from './components/ResultsDisplay';
 import MatchScore from './components/MatchScore';
@@ -90,49 +91,27 @@ function App() {
     fetchOriginalResumes();
   }, []);
 
-  // Download original resume
-  const handleDownloadOriginalResume = async (filename) => {
-    try {
-      const response = await fetch(
-        `https://jobs.trusase.com/download/${encodeURIComponent(filename)}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Download failed');
-      }
-      
-      // Get the blob
-      const blob = await response.blob();
-      
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename.replace('.txt', '.txt');
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Download error:', err);
-      setResumesFetchError('Failed to download resume');
-    }
-  };
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
       <TopBar />
+      <Header />
+      <div className="mb-6">
+        <HeroFeatureStrip />
+      </div>
+      <div className="mb-6">
+        <ProcessSteps isLoading={isLoading || showProgress} hasResults={!!results} />
+      </div>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         <ErrorDisplay error={error} onDismiss={handleDismissError} />
 
         <div className="space-y-8">
           {/* Primary grid: JD input + tips/analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <JobDescriptionInput onSubmit={handleSubmit} isLoading={isLoading} onChangeJD={setJobDescription} />
+              <JobDescriptionInput onSubmit={handleSubmit} isLoading={isLoading} onChangeJD={setJobDescription} value={jobDescription} />
             </div>
             <div className="lg:col-span-1">
               {jobDescription ? (
@@ -159,12 +138,11 @@ function App() {
         resumes={originalResumes}
         isLoading={isLoadingResumes}
         error={resumesFetchError}
-        onDownload={handleDownloadOriginalResume}
         onRefresh={fetchOriginalResumes}
       />
 
       <footer className="mt-12 py-8 border-t border-gray-200 bg-white">
-        <div className="max-w-6xl mx-auto px-6 text-center text-sm text-gray-500">
+        <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-500">
           <p className="font-medium text-gray-700">AI Resume Tailor</p>
           <p className="mt-1">Personal use • Powered by Cloudflare Workers & OpenAI</p>
         </div>

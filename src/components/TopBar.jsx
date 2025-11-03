@@ -1,8 +1,9 @@
 import { Sparkles } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function TopBar() {
   return (
-    <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+    <div className="sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo Section */}
         <div className="flex items-center gap-3">
@@ -16,10 +17,14 @@ export default function TopBar() {
         </div>
         
         {/* Right Section */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-lg border border-primary-200">
-          <span className="text-xs font-medium text-primary-600">✨ Powered by AI</span>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-lg border border-primary-200">
+            <span className="text-xs font-medium text-primary-600">✨ Powered by AI</span>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

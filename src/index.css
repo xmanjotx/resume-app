@@ -9,3 +9,11 @@
   html { @apply antialiased; }
   ::selection { @apply bg-primary-600 text-white; }
 }
+
+@layer utilities {
+  .bg-hero-glow {
+    background-image:
+      radial-gradient(800px 400px at 20% -10%, rgba(37, 99, 235, 0.12), transparent 60%),
+      radial-gradient(800px 400px at 80% -20%, rgba(99, 102, 241, 0.10), transparent 60%);
+  }
+}
