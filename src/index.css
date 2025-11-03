@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-white text-black;
+    @apply bg-gray-50 text-gray-900;
   }
   html { @apply antialiased; }
-  ::selection { @apply bg-black text-white; }
+  ::selection { @apply bg-primary-600 text-white; }
 }

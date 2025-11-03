@@ -113,47 +113,49 @@ export default function SmartAnalysis({ jobDescription }) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <Brain className="w-5 h-5 text-blue-600" />
-        <h3 className="text-sm font-semibold text-slate-900">Smart Job Analysis</h3>
+    <div className="bg-white border border-black/10 rounded-2xl p-6 mb-6 hover:border-black/20 transition-colors">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="p-2 rounded-lg bg-black">
+          <Brain className="w-4 h-4 text-white" />
+        </div>
+        <h3 className="text-base font-bold text-black">Smart Job Analysis</h3>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      {/* Analysis Badges - 4 Column Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {/* Seniority Level */}
-        <div className={`p-3 rounded-lg border ${getSeniorityColor(analysis.seniority)}`}>
-          <div className="text-xs font-medium opacity-75">Seniority</div>
-          <div className="text-sm font-semibold capitalize">{analysis.seniority}</div>
+        <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-center">
+          <div className="text-xs font-medium text-purple-600 mb-1">Seniority</div>
+          <div className="text-sm font-bold text-purple-700 capitalize">{analysis.seniority}</div>
         </div>
 
         {/* Years Required */}
         {analysis.yearsRequired && (
-          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-700">
-            <div className="text-xs font-medium opacity-75">Experience</div>
-            <div className="text-sm font-semibold">{analysis.yearsRequired}+ years</div>
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+            <div className="text-xs font-medium text-amber-600 mb-1">Experience</div>
+            <div className="text-sm font-bold text-amber-700">{analysis.yearsRequired}+</div>
+            <div className="text-xs text-amber-600">years</div>
           </div>
         )}
 
         {/* Job Type */}
-        <div className="p-3 rounded-lg bg-cyan-50/70 border border-cyan-200 text-cyan-700">
-          <div className="text-xs font-medium opacity-75">Work Type</div>
-          <div className="text-sm font-semibold capitalize">{analysis.jobType}</div>
+        <div className="p-4 rounded-2xl bg-cyan-50 border border-cyan-200 text-center">
+          <div className="text-xs font-medium text-cyan-600 mb-1">Work</div>
+          <div className="text-xs font-bold text-cyan-700">Type</div>
+          <div className="text-xs text-cyan-600 capitalize mt-1">{analysis.jobType}</div>
         </div>
 
         {/* Complexity */}
-        <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700">
-          <div className="text-xs font-medium opacity-75">Complexity</div>
-          <div className="flex items-center gap-1">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-semibold">{getComplexityLabel(analysis.complexity)}</span>
-          </div>
+        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-center">
+          <div className="text-xs font-medium text-indigo-600 mb-1">Complexity</div>
+          <div className="text-sm font-bold text-indigo-700">{getComplexityLabel(analysis.complexity)}</div>
         </div>
       </div>
 
       {/* Top Skills */}
       {analysis.skills.length > 0 && (
-        <div>
-          <div className="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+        <div className="mb-6">
+          <div className="text-sm font-bold text-black mb-3 flex items-center gap-2">
             <Zap className="w-4 h-4" />
             Key Skills Detected
           </div>
@@ -161,7 +163,7 @@ export default function SmartAnalysis({ jobDescription }) {
             {analysis.skills.map((skill, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50 transition-colors"
+                className="px-3 py-1.5 bg-white border border-black/10 rounded-full text-xs font-medium text-black/70 hover:border-black/30 hover:bg-black/5 transition-all"
               >
                 {skill}
               </span>
@@ -171,13 +173,13 @@ export default function SmartAnalysis({ jobDescription }) {
       )}
 
       {/* Smart Insights */}
-      <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
-        <div className="flex gap-2 text-sm text-slate-700">
-          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <span className="font-medium">Smart Tip:</span> This is a{' '}
-            <span className="font-semibold">{analysis.seniority}-level</span> position requiring{' '}
-            <span className="font-semibold">{analysis.yearsRequired ? `${analysis.yearsRequired}+ years` : 'varied'}</span>{' '}
+      <div className="p-4 bg-white border border-black/10 rounded-xl">
+        <div className="flex gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-black/80">
+            <span className="font-bold">Smart Tip:</span> This is a{' '}
+            <span className="font-bold text-black">{analysis.seniority}-level</span> position requiring{' '}
+            <span className="font-bold text-black">{analysis.yearsRequired ? `${analysis.yearsRequired}+ years` : 'varied'}</span>{' '}
             of experience. Focus on relevant achievements and quantifiable results.
           </div>
         </div>

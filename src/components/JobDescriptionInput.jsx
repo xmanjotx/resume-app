@@ -31,36 +31,42 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD })
   };
 
   return (
-    <div className="bg-white border border-black/10 rounded-2xl p-6 hover:border-black/20 transition-colors">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-lg bg-black">
-          <FileText className="w-4 h-4 text-white" />
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2.5 rounded-md bg-primary-50">
+          <FileText className="w-5 h-5 text-primary-600" />
         </div>
-        <h2 className="text-base font-bold text-black">Job Description</h2>
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Job Description</h2>
+          <p className="text-xs text-gray-500">Paste the complete job posting</p>
+        </div>
       </div>
 
+      {/* Textarea */}
       <textarea
         value={jobDescription}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder="Paste the complete job description here..."
-        className="w-full h-56 px-4 py-3 border border-black/10 rounded-xl focus:ring-2 focus:ring-black focus:border-black resize-none font-mono text-sm placeholder:text-black/40 bg-white text-black"
+        className="w-full h-72 px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none font-mono text-sm placeholder:text-gray-400 bg-white text-gray-900 transition-all duration-200"
         disabled={isLoading}
       />
 
-      <div className="flex items-center justify-between mt-5">
-        <div className="text-sm text-black/60">
+      {/* Footer */}
+      <div className="flex items-center justify-between mt-6">
+        <div className="text-xs text-gray-500">
           {charCount} characters
           {charCount > 0 && charCount < 100 && (
-            <span className="text-black/40 ml-2">• Add more details</span>
+            <span className="text-warning-500 ml-2 font-medium">• Add more details for better analysis</span>
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={handleClear}
             disabled={!jobDescription || isLoading}
-            className="px-4 py-2 text-black bg-black/5 rounded-lg hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium text-sm"
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2 font-medium text-sm"
           >
             <X className="w-4 h-4" />
             Clear
@@ -69,7 +75,7 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD })
           <button
             onClick={handleSubmit}
             disabled={!jobDescription.trim() || isLoading}
-            className="px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-bold text-white bg-black hover:bg-black/90 text-sm"
+            className="px-6 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-semibold text-white bg-primary-600 hover:bg-primary-700 shadow-md hover:shadow-lg text-sm"
           >
             {isLoading ? (
               <>
@@ -79,7 +85,7 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD })
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                Generate
+                Generate Resume
               </>
             )}
           </button>
