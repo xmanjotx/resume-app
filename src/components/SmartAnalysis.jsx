@@ -113,10 +113,10 @@ export default function SmartAnalysis({ jobDescription }) {
   };
 
   return (
-    <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 rounded-lg p-5 mb-6">
+    <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-sm">
       <div className="flex items-center gap-2 mb-4">
         <Brain className="w-5 h-5 text-blue-600" />
-        <h3 className="font-semibold text-slate-900">Smart Job Analysis</h3>
+        <h3 className="text-sm font-semibold text-slate-900">Smart Job Analysis</h3>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -135,7 +135,7 @@ export default function SmartAnalysis({ jobDescription }) {
         )}
 
         {/* Job Type */}
-        <div className="p-3 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-700">
+        <div className="p-3 rounded-lg bg-cyan-50/70 border border-cyan-200 text-cyan-700">
           <div className="text-xs font-medium opacity-75">Work Type</div>
           <div className="text-sm font-semibold capitalize">{analysis.jobType}</div>
         </div>
@@ -161,7 +161,7 @@ export default function SmartAnalysis({ jobDescription }) {
             {analysis.skills.map((skill, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50 transition-colors"
               >
                 {skill}
               </span>
@@ -171,7 +171,7 @@ export default function SmartAnalysis({ jobDescription }) {
       )}
 
       {/* Smart Insights */}
-      <div className="mt-4 p-3 bg-white rounded-lg border border-slate-200">
+      <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
         <div className="flex gap-2 text-sm text-slate-700">
           <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
           <div>

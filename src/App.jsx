@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import Header from './components/Header';
+import TopBar from './components/TopBar';
 import JobDescriptionInput from './components/JobDescriptionInput';
 import SmartAnalysis from './components/SmartAnalysis';
 import LoadingState from './components/LoadingState';
@@ -7,6 +8,7 @@ import ProgressBar from './components/ProgressBar';
 import ResultsDisplay from './components/ResultsDisplay';
 import MatchScore from './components/MatchScore';
 import ErrorDisplay from './components/ErrorDisplay';
+import TipsPanel from './components/TipsPanel';
 import { tailorResume } from './utils/api';
 
 function App() {
@@ -57,16 +59,26 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="min-h-screen bg-white">
+      <TopBar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-6">
         <ErrorDisplay error={error} onDismiss={handleDismissError} />
 
         <div className="space-y-8">
-          <JobDescriptionInput onSubmit={handleSubmit} isLoading={isLoading} />
-
-          {jobDescription && !isLoading && <SmartAnalysis jobDescription={jobDescription} />}
+          {/* Primary grid: JD input + tips/analysis */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <JobDescriptionInput onSubmit={handleSubmit} isLoading={isLoading} onChangeJD={setJobDescription} />
+            </div>
+            <div className="lg:col-span-1">
+              {jobDescription ? (
+                !isLoading && <SmartAnalysis jobDescription={jobDescription} />
+              ) : (
+                <TipsPanel onPick={(text) => setJobDescription(text)} />
+              )}
+            </div>
+          </div>
 
           <ProgressBar isVisible={showProgress} onCancel={handleCancel} />
 
@@ -79,10 +91,10 @@ function App() {
         </div>
       </main>
 
-      <footer className="mt-16 py-8 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-          <p>AI Resume Tailor - Personal Use Only</p>
-          <p className="mt-1">Powered by Cloudflare Workers & OpenAI</p>
+      <footer className="mt-16 py-8 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+          <p className="font-medium text-slate-700">AI Resume Tailor</p>
+          <p className="mt-1">Personal use • Powered by Cloudflare Workers & OpenAI</p>
         </div>
       </footer>
     </div>
