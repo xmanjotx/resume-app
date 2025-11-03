@@ -114,11 +114,20 @@ export function generatePDF(content, filename, title = '') {
 }
 
 /**
- * Generate resume PDF
+ * Generate resume PDF with custom filename
  * @param {string} resumeContent - The resume text content
+ * @param {string} customFilename - Optional custom filename (without extension)
  */
-export function generateResumePDF(resumeContent) {
-  generatePDF(resumeContent, 'Tailored_Resume', '');
+export function generateResumePDF(resumeContent, customFilename = 'Tailored_Resume') {
+  generatePDF(resumeContent, customFilename, '');
+}
+
+/**
+ * Generate original resume PDF
+ * @param {string} resumeContent - The original resume text content
+ */
+export function generateOriginalResumePDF(resumeContent) {
+  generatePDF(resumeContent, 'Original_Resume', '');
 }
 
 /**
@@ -127,4 +136,90 @@ export function generateResumePDF(resumeContent) {
  */
 export function generateCoverLetterPDF(coverLetterContent) {
   generatePDF(coverLetterContent, 'Cover_Letter', '');
+}
+
+/**
+ * Professional Resume Template
+ * Creates a polished, ATS-friendly resume with better formatting
+ */
+export function generateProfessionalResumePDF(resumeContent, filename = 'Professional_Resume') {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const FONT_FAMILY = 'Arial';
+  const BODY_FONT_SIZE = 10.5;
+  const HEADING_FONT_SIZE = 12;
+  const NAME_FONT_SIZE = 16;
+  
+  const TOP_MARGIN = 12;
+  const LEFT_MARGIN = 12;
+  const RIGHT_MARGIN = 12;
+  const BOTTOM_MARGIN = 12;
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxWidth = pageWidth - (LEFT_MARGIN + RIGHT_MARGIN);
+  
+  const LINE_HEIGHT = 5;
+  const SECTION_SPACING = 2;
+  const HEADING_SPACING = 1;
+
+  let yPosition = TOP_MARGIN;
+
+  doc.setFont(FONT_FAMILY, 'normal');
+  doc.setFontSize(BODY_FONT_SIZE);
+
+  const lines = resumeContent.split('\n');
+
+  lines.forEach((line, index) => {
+    if (yPosition > pageHeight - BOTTOM_MARGIN - 5) {
+      doc.addPage();
+      yPosition = TOP_MARGIN;
+    }
+
+    if (line.trim() === '') {
+      yPosition += SECTION_SPACING;
+      return;
+    }
+
+    const trimmedLine = line.trim();
+    const isAllCaps = trimmedLine === trimmedLine.toUpperCase();
+    const isShortLine = trimmedLine.length < 60;
+    const isHeading = isAllCaps && isShortLine && trimmedLine.length > 0;
+    const isNameOrTitle = index < 5 && trimmedLine.length < 50 && /^[A-Z]/.test(trimmedLine);
+
+    if (isNameOrTitle && index === 0) {
+      doc.setFont(FONT_FAMILY, 'bold');
+      doc.setFontSize(NAME_FONT_SIZE);
+    } else if (isHeading) {
+      doc.setFont(FONT_FAMILY, 'bold');
+      doc.setFontSize(HEADING_FONT_SIZE);
+    } else {
+      doc.setFont(FONT_FAMILY, 'normal');
+      doc.setFontSize(BODY_FONT_SIZE);
+    }
+
+    const splitLines = doc.splitTextToSize(trimmedLine, maxWidth);
+
+    splitLines.forEach((splitLine) => {
+      if (yPosition > pageHeight - BOTTOM_MARGIN - 5) {
+        doc.addPage();
+        yPosition = TOP_MARGIN;
+      }
+
+      doc.text(splitLine, LEFT_MARGIN, yPosition);
+      yPosition += LINE_HEIGHT;
+    });
+
+    if (isHeading) {
+      yPosition += HEADING_SPACING;
+    }
+  });
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+  const finalFilename = `${filename}_${timestamp}.pdf`;
+  doc.save(finalFilename);
 }
