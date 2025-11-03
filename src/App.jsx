@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
 import Header from './components/Header';
 import JobDescriptionInput from './components/JobDescriptionInput';
+import SmartAnalysis from './components/SmartAnalysis';
 import LoadingState from './components/LoadingState';
 import ProgressBar from './components/ProgressBar';
 import ResultsDisplay from './components/ResultsDisplay';
+import MatchScore from './components/MatchScore';
 import ErrorDisplay from './components/ErrorDisplay';
 import { tailorResume } from './utils/api';
 
@@ -12,9 +14,11 @@ function App() {
   const [showProgress, setShowProgress] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [jobDescription, setJobDescription] = useState('');
   const abortControllerRef = useRef(null);
 
-  const handleSubmit = async (jobDescription) => {
+  const handleSubmit = async (jd) => {
+    setJobDescription(jd);
     setIsLoading(true);
     setShowProgress(true);
     setError(null);
@@ -24,7 +28,7 @@ function App() {
     abortControllerRef.current = new AbortController();
 
     try {
-      const data = await tailorResume(jobDescription, abortControllerRef.current.signal);
+      const data = await tailorResume(jd, abortControllerRef.current.signal);
       setResults(data);
       setShowProgress(false);
     } catch (err) {
@@ -62,9 +66,16 @@ function App() {
         <div className="space-y-8">
           <JobDescriptionInput onSubmit={handleSubmit} isLoading={isLoading} />
 
+          {jobDescription && !isLoading && <SmartAnalysis jobDescription={jobDescription} />}
+
           <ProgressBar isVisible={showProgress} onCancel={handleCancel} />
 
-          {results && <ResultsDisplay results={results} />}
+          {results && (
+            <>
+              <MatchScore results={results} />
+              <ResultsDisplay results={results} />
+            </>
+          )}
         </div>
       </main>
 
