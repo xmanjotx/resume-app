@@ -26,19 +26,23 @@ export default function TipsPanel({ onPick }) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-primary-200 transition-all">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary-600">
-            <Info className="w-4 h-4 text-white" />
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+      <div className="p-5 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-600">
+              <Info className="w-4 h-4 text-white" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900">Tips</h3>
           </div>
-          <h3 className="text-base font-bold text-gray-900">Tips</h3>
-        </div>
-        <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Try an example</span>
+          <div className="hidden md:flex items-center gap-2 text-xs text-gray-500">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Try an example</span>
+          </div>
         </div>
       </div>
+      
+      <div className="p-5">
 
       <ul className="space-y-3.5 text-sm text-gray-700 leading-relaxed">
         <li className="flex gap-3">
@@ -75,6 +79,7 @@ export default function TipsPanel({ onPick }) {
             </button>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

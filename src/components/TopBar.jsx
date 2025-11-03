@@ -19,9 +19,6 @@ export default function TopBar() {
         {/* Right Section */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-lg border border-primary-200">
-            <span className="text-xs font-medium text-primary-600">✨ Powered by AI</span>
-          </div>
         </div>
       </div>
     </div>

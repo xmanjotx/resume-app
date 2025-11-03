@@ -43,22 +43,29 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD, v
   const pct = Math.min(100, Math.round(((charCount || 0) / recommended) * 100));
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-primary-200 transition-all duration-200">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-primary-50 border border-primary-200">
-            <FileText className="w-5 h-5 text-primary-600" />
+      <div className="p-5 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
+              <FileText className="w-5 h-5 text-primary-600" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Job Description</h2>
+              <p className="text-xs text-gray-600">Paste the complete job posting</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Job Description</h2>
-            <p className="text-xs text-gray-600">Paste the complete job posting</p>
+          <div className="hidden md:block">
+            <span className="px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-700 border border-gray-200">
+              Recommended: ~600+ chars
+            </span>
           </div>
-        </div>
-        <div className="hidden md:flex items-center gap-2 text-xs text-gray-600">
-          <span className="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200 font-medium">Recommended: ~600+ chars</span>
         </div>
       </div>
+
+      {/* Content */}
+      <div className="p-5">
 
       {/* Textarea */}
       <textarea
@@ -130,6 +137,7 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD, v
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

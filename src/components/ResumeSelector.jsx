@@ -17,19 +17,25 @@ export default function ResumeSelector({ resumes, selectedResume, onSelect, isLo
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary-200 transition-all">
-      <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg bg-primary-50 border border-primary-200 flex-shrink-0">
-          <FileText className="w-4 h-4 text-primary-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-sm font-bold text-gray-900">Resume Selection</h3>
-            <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600">Optional</span>
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+      <div className="p-5 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
+              <FileText className="w-4 h-4 text-primary-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Resume Selection</h3>
+              <p className="text-xs text-gray-600">Choose a specific resume or let AI auto-select</p>
+            </div>
           </div>
-          <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-            Choose a specific resume or let AI auto-select the best match
-          </p>
+          <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+            Optional
+          </span>
+        </div>
+      </div>
+      
+      <div className="p-5">
           
           <div className="flex flex-wrap gap-2">
             {/* Auto-select option */}
@@ -70,7 +76,6 @@ export default function ResumeSelector({ resumes, selectedResume, onSelect, isLo
               );
             })}
           </div>
-        </div>
       </div>
     </div>
   );

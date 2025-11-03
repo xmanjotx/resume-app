@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Header from './components/Header';
-import TopBar from './components/TopBar';
-import HeroFeatureStrip from './components/HeroFeatureStrip';
+import CompactHeader from './components/CompactHeader';
 import ProcessSteps from './components/ProcessSteps';
 import JobDescriptionInput from './components/JobDescriptionInput';
 import SmartAnalysis from './components/SmartAnalysis';
@@ -67,6 +65,19 @@ function App() {
     setError(null);
   };
 
+  const handleRestart = () => {
+    setJobDescription('');
+    setResults(null);
+    setError(null);
+    setShowProgress(false);
+    setSelectedResume(null);
+  };
+
+  const handleHome = () => {
+    handleRestart();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Fetch original resumes function
   const fetchOriginalResumes = async () => {
     setIsLoadingResumes(true);
@@ -97,11 +108,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <TopBar />
-      <Header />
-      <div className="py-4">
-        <HeroFeatureStrip />
-      </div>
+      <CompactHeader onHome={handleHome} onRestart={handleRestart} showActions={!!results} />
+
       <div className="py-4">
         <ProcessSteps isLoading={isLoading || showProgress} hasResults={!!results} />
       </div>

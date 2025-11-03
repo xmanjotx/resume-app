@@ -12,26 +12,24 @@ export default function ProcessSteps({ isLoading, hasResults }) {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-2">
-      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-        <ol className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {steps.map((s, idx) => {
-            const Icon = s.icon;
-            const state = s.key < current ? 'done' : s.key === current ? 'active' : 'idle';
-            const base = 'flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm border transition-all';
-            const cls =
-              state === 'done'
-                ? 'bg-primary-50 text-primary-700 border-primary-200 shadow-sm'
-                : state === 'active'
-                ? 'bg-primary-600 text-white border-primary-600 shadow-md'
-                : 'bg-white text-gray-500 border-gray-200';
-            return (
-              <li key={s.key} className={`${base} ${cls}`}>
-                <Icon className="w-4 h-4" />
-                <span className="font-semibold">{s.title}</span>
-              </li>
-            );
-          })}
-        </ol>
+      <div className="flex items-center justify-center gap-2 flex-wrap">
+        {steps.map((s, idx) => {
+          const Icon = s.icon;
+          const state = s.key < current ? 'done' : s.key === current ? 'active' : 'idle';
+          const base = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border font-medium transition-all';
+          const cls =
+            state === 'done'
+              ? 'bg-primary-50 text-primary-700 border-primary-200'
+              : state === 'active'
+              ? 'bg-primary-600 text-white border-primary-600 shadow-md'
+              : 'bg-white text-gray-500 border-gray-200';
+          return (
+            <li key={s.key} className={`${base} ${cls}`}>
+              <Icon className="w-3.5 h-3.5" />
+              <span>{s.title}</span>
+            </li>
+          );
+        })}
       </div>
     </div>
   );
