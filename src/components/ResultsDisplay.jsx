@@ -21,7 +21,26 @@ export default function ResultsDisplay({ results }) {
     return text.replace(/[•●▪]/g, '-');
   };
 
-  const finalResume = formatResumeForATS(results.tailoredResume);
+  const preprocessResumeForTemplate = (text) => {
+    // Ensure all required sections are present for the two-column layout
+    const requiredSections = ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'PROJECTS'];
+    let processedText = text;
+    requiredSections.forEach(section => {
+      if (!processedText.includes(`${section}:`)) {
+        // Find common variations and replace them
+        const regex = new RegExp(`^${section}s?$\n`, 'im');
+        if (processedText.match(regex)) {
+          processedText = processedText.replace(regex, `${section}:\n`);
+        } else {
+          // If not found, it might be a parsing issue from the AI.
+          // This is a fallback and might need AI prompt tuning.
+        }
+      }
+    });
+    return processedText;
+  };
+
+  const finalResume = formatResumeForATS(preprocessResumeForTemplate(results.tailoredResume));
   const finalCoverLetter = cleanCoverLetter(results.coverLetter);
 
   const handleCopyResume = async () => {
@@ -59,14 +78,14 @@ export default function ResultsDisplay({ results }) {
   return (
     <div className="space-y-6">
       {/* Selection Info Card */}
-      <div className="bg-white border border-black/10 rounded-2xl p-6 hover:border-black/20 transition-colors">
+      <div className="glass rounded-xl p-6">
         <div className="flex items-start gap-3">
           <CheckCircle className="w-6 h-6 text-black flex-shrink-0 mt-1" />
           <div className="flex-1">
             <h3 className="text-base font-bold text-black mb-3">
               ✓ Resume Selected & Tailored
             </h3>
-            <div className="bg-black/5 rounded-lg px-3 py-2 mb-3 inline-flex items-center gap-2 border border-black/10">
+            <div className="bg-black/5 rounded-lg px-3 py-2 mb-3 inline-flex items-center gap-2 border border-white/40">
               <span className="text-sm font-semibold text-black">
                 {results.selectedResume}
               </span>
@@ -84,14 +103,14 @@ export default function ResultsDisplay({ results }) {
       {/* Resume and Cover Letter Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Tailored Resume Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
               <FileText className="w-5 h-5 text-primary-600" />
             </div>
             <h3 className="text-base font-bold text-gray-900">Tailored Resume</h3>
           </div>
-          <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto">{finalResume}</pre>
+          <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-white/40 border border-white/40 p-4 rounded-lg max-h-60 overflow-y-auto">{finalResume}</pre>
           <div className="flex gap-2">
             <button onClick={() => setShowResumePreview(true)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Preview</button>
             <button onClick={handleDownloadResume} className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download</button>
@@ -99,14 +118,14 @@ export default function ResultsDisplay({ results }) {
         </div>
 
         {/* Cover Letter Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
               <Mail className="w-5 h-5 text-primary-600" />
             </div>
             <h3 className="text-base font-bold text-gray-900">Cover Letter</h3>
           </div>
-          <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto">{finalCoverLetter}</pre>
+          <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-white/40 border border-white/40 p-4 rounded-lg max-h-60 overflow-y-auto">{finalCoverLetter}</pre>
           <div className="flex gap-2">
             <button onClick={() => setShowCoverLetterPreview(true)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Preview</button>
             <button onClick={handleDownloadCoverLetter} className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download</button>

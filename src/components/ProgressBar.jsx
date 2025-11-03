@@ -55,7 +55,7 @@ export default function ProgressBar({ isVisible, onCancel }) {
   );
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 shadow-sm">
+    <div className="glass rounded-xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="relative">

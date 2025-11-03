@@ -4,15 +4,23 @@ import JobDescriptionInput from './components/JobDescriptionInput';
 import ProgressBar from './components/ProgressBar';
 import ResultsDisplay from './components/ResultsDisplay';
 import ErrorDisplay from './components/ErrorDisplay';
+import ResumeSelector from './components/ResumeSelector';
 import OriginalResumesFooter from './components/OriginalResumesFooter';
+import ResumePreviewStep from './components/ResumePreviewStep';
+import CoverLetterPreviewStep from './components/CoverLetterPreviewStep';
+import DownloadStep from './components/DownloadStep';
 import { tailorResume } from './utils/api';
+import { generateProfessionalResumePDF, generateCoverLetterPDF } from './utils/pdfGenerator';
 
 function App() {
+  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
+  const [editedResume, setEditedResume] = useState('');
+  const [editedCoverLetter, setEditedCoverLetter] = useState('');
   const abortControllerRef = useRef(null);
 
   // Original resumes state
@@ -21,30 +29,48 @@ function App() {
   const [resumesFetchError, setResumesFetchError] = useState(null);
   const [selectedResume, setSelectedResume] = useState(null); // null = auto-select
 
-  const handleSubmit = async (jd) => {
-    setJobDescription(jd);
+  const handleDownloadOriginal = async (filename) => {
+    try {
+      const response = await fetch(`https://jobs.trusase.com/download/${filename}`);
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      setError('Failed to download original resume.');
+    }
+  };
+
+  const handleNextStep = () => setStep(step + 1);
+  const handlePrevStep = () => setStep(step - 1);
+
+  const handleSubmit = async () => {
+    setStep(3); // Move to generating step
     setIsLoading(true);
     setShowProgress(true);
     setError(null);
     setResults(null);
 
-    // Create abort controller for cancellation
     abortControllerRef.current = new AbortController();
 
     try {
-      const data = await tailorResume(jd, abortControllerRef.current.signal, selectedResume);
+      const data = await tailorResume(jobDescription, abortControllerRef.current.signal, selectedResume);
       setResults(data);
-      setShowProgress(false);
+      setEditedResume(data.tailoredResume);
+      setEditedCoverLetter(data.coverLetter);
+      setStep(4); // Move to resume preview step
     } catch (err) {
-      if (err.name === 'AbortError') {
-        setError('Request cancelled.');
-      } else {
-        setError(err.message || 'Failed to generate tailored resume. Please try again.');
-      }
-      console.error('Error:', err);
-      setShowProgress(false);
+      setError(err.message || 'Failed to generate results.');
+      setStep(1); // Go back to start on error
     } finally {
       setIsLoading(false);
+      setShowProgress(false);
     }
   };
 
@@ -66,6 +92,7 @@ function App() {
     setError(null);
     setShowProgress(false);
     setSelectedResume(null);
+    setStep(1);
   };
 
   const handleHome = () => {
@@ -103,41 +130,48 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <CompactHeader onHome={handleHome} onRestart={handleRestart} showActions={!!results} />
+      <CompactHeader onHome={handleHome} onRestart={handleRestart} showActions={step > 1} />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        {!results && (
-          <OriginalResumesFooter
-            resumes={originalResumes}
-            isLoading={isLoadingResumes}
-            error={resumesFetchError}
-            onRefresh={fetchOriginalResumes}
-          />
-        )}
         <ErrorDisplay error={error} onDismiss={handleDismissError} />
 
         <div className="space-y-8">
-          {!results && (
-            <JobDescriptionInput
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              onChangeJD={setJobDescription}
-              value={jobDescription}
+          {step === 1 && (
+            <JobDescriptionInput onSubmit={handleNextStep} isLoading={isLoading} onChangeJD={setJobDescription} value={jobDescription} />
+          )}
+          {step === 2 && (
+            <ResumeSelector resumes={originalResumes} selectedResume={selectedResume} onSelect={setSelectedResume} isLoading={isLoadingResumes} onNext={handleSubmit} onBack={handlePrevStep} />
+          )}
+          {step === 3 && <ProgressBar isVisible={showProgress} onCancel={handleCancel} />}
+          {step === 4 && results && (
+            <ResumePreviewStep 
+              resumeContent={editedResume} 
+              onNext={handleNextStep} 
+              onBack={() => setStep(2)} 
+              onContentChange={setEditedResume}
+              pdfGenerator={async (content) => await generateProfessionalResumePDF(content, 'resume', true)}
             />
           )}
-
-          <ProgressBar isVisible={showProgress} onCancel={handleCancel} />
-
-          {results && <ResultsDisplay results={results} />}
+          {step === 5 && results && (
+            <CoverLetterPreviewStep 
+              coverLetterContent={editedCoverLetter} 
+              onNext={handleNextStep} 
+              onBack={handlePrevStep} 
+              onContentChange={setEditedCoverLetter}
+              pdfGenerator={async (content) => await generateCoverLetterPDF(content, true)}
+            />
+          )}
+          {step === 6 && results && (
+            <DownloadStep 
+              onDownloadResume={() => generateProfessionalResumePDF(editedResume, 'Tailored_Resume')}
+              onDownloadCoverLetter={() => generateCoverLetterPDF(editedCoverLetter)}
+              onBack={handlePrevStep} 
+            />
+          )}
         </div>
       </main>
 
-      <OriginalResumesFooter
-        resumes={originalResumes}
-        isLoading={isLoadingResumes}
-        error={resumesFetchError}
-        onRefresh={fetchOriginalResumes}
-      />
+      <OriginalResumesFooter resumes={originalResumes} isLoading={isLoadingResumes} error={resumesFetchError} onRefresh={fetchOriginalResumes} onDownload={handleDownloadOriginal} />
 
       <footer className="mt-12 py-8 border-t border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-500">

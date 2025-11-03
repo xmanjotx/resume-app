@@ -2,9 +2,9 @@ import { Home, RotateCcw, Sparkles } from 'lucide-react';
 
 export default function CompactHeader({ onHome, onRestart, showActions }) {
   return (
-    <div className="sticky top-0 z-50 bg-gray-50 py-3">
+    <div className="sticky top-0 z-50 py-3">
       <div className="max-w-4xl mx-auto px-6">
-        <div className="bg-white rounded-full shadow-md border border-gray-200 px-6 py-2.5 flex items-center justify-between">
+        <div className="glass rounded-full px-6 py-2.5 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center shadow-sm">

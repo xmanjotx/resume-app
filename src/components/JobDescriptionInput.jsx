@@ -43,9 +43,9 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD, v
   const pct = Math.min(100, Math.round(((charCount || 0) / recommended) * 100));
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="glass rounded-xl transition-shadow duration-200">
       {/* Header */}
-      <div className="p-5 border-b border-gray-200">
+      <div className="p-5 border-b border-white/40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
@@ -112,17 +112,8 @@ export default function JobDescriptionInput({ onSubmit, isLoading, onChangeJD, v
               disabled={!jobDescription.trim() || isLoading}
               className="px-6 py-2.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-bold text-white bg-primary-600 hover:bg-primary-700 shadow-md hover:shadow-lg text-sm"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Generate Resume
-                </>
-              )}
+              Next
+              <Sparkles className="w-4 h-4" />
             </button>
           </div>
         </div>

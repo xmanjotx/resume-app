@@ -1,6 +1,6 @@
-import { FileText, Sparkles, Loader2 } from 'lucide-react';
+import { FileText, Sparkles, Loader2, Download, RefreshCw } from 'lucide-react';
 
-export default function ResumeSelector({ resumes, selectedResume, onSelect, isLoading }) {
+export default function ResumeSelector({ resumes, selectedResume, onSelect, isLoading, onNext, onBack }) {
   if (isLoading) {
     return (
       <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
@@ -12,13 +12,11 @@ export default function ResumeSelector({ resumes, selectedResume, onSelect, isLo
     );
   }
 
-  if (!resumes || resumes.length === 0) {
-    return null;
-  }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-      <div className="p-5 border-b border-gray-200">
+    <>
+      <div className="glass rounded-xl transition-shadow">
+        <div className="p-5 border-b border-white/40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
@@ -38,45 +36,25 @@ export default function ResumeSelector({ resumes, selectedResume, onSelect, isLo
       <div className="p-5">
           
           <div className="flex flex-wrap gap-2">
-            {/* Auto-select option */}
-            <button
-              onClick={() => onSelect(null)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                selectedResume === null
-                  ? 'bg-primary-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
+            <button onClick={() => onSelect(null)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${selectedResume === null ? 'bg-primary-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
               <Sparkles className="w-3.5 h-3.5" />
               Auto-select (AI)
             </button>
-
-            {/* Individual resume options */}
             {resumes.map((resume) => {
-              const cleanName = resume.filename
-                .replace(/\.(txt|pdf)$/i, '')
-                .replace(/_\d{8}$/i, '')
-                .split('_')
-                .slice(1)
-                .join(' ') || resume.filename;
-
+              const cleanName = resume.filename.replace(/\.(txt|pdf)$/i, '').replace(/_\d{8}$/i, '').split('_').slice(1).join(' ') || resume.filename;
               return (
-                <button
-                  key={resume.filename}
-                  onClick={() => onSelect(resume.filename)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedResume === resume.filename
-                      ? 'bg-primary-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  title={resume.filename}
-                >
+                <button key={resume.filename} onClick={() => onSelect(resume.filename)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${selectedResume === resume.filename ? 'bg-primary-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} title={resume.filename}>
                   {cleanName}
                 </button>
               );
             })}
           </div>
+        </div>
       </div>
-    </div>
+      <div className="p-5 border-t border-white/40 flex justify-between">
+        <button onClick={onBack} className="px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Back</button>
+        <button onClick={onNext} className="px-6 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Next</button>
+      </div>
+    </>
   );
 }

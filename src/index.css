@@ -4,16 +4,30 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    /* Subtle gradient background to support glass surfaces */
+    background: radial-gradient(1200px 500px at 20% -10%, rgba(37,99,235,0.10), transparent 60%),
+                radial-gradient(900px 400px at 80% -20%, rgba(99,102,241,0.10), transparent 60%),
+                #f8fafc;
+    @apply text-gray-900;
   }
   html { @apply antialiased; }
   ::selection { @apply bg-primary-600 text-white; }
 }
 
 @layer utilities {
-  .bg-hero-glow {
-    background-image:
-      radial-gradient(800px 400px at 20% -10%, rgba(37, 99, 235, 0.12), transparent 60%),
-      radial-gradient(800px 400px at 80% -20%, rgba(99, 102, 241, 0.10), transparent 60%);
+  /* Glassmorphism utility */
+  .glass {
+    background: rgba(255,255,255,0.55);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  }
+  .glass-soft {
+    background: rgba(255,255,255,0.4);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   }
 }
