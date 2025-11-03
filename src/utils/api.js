@@ -8,16 +8,22 @@ const API_URL = 'https://jobs.trusase.com';
  * Tailor resume based on job description
  * @param {string} jobDescription - The job description text
  * @param {AbortSignal} signal - Optional abort signal for cancellation
+ * @param {string|null} selectedResume - Optional specific resume filename to use (null for auto-select)
  * @returns {Promise<Object>} - Tailored resume and cover letter data
  */
-export async function tailorResume(jobDescription, signal) {
+export async function tailorResume(jobDescription, signal, selectedResume = null) {
   try {
+    const requestBody = { jobDescription };
+    if (selectedResume) {
+      requestBody.selectedResume = selectedResume;
+    }
+
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ jobDescription }),
+      body: JSON.stringify(requestBody),
       signal,
     });
 

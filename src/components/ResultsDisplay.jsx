@@ -1,12 +1,14 @@
-import { CheckCircle, FileText, Mail, Download, Copy, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle, FileText, Mail, Download, Copy, ChevronDown, ChevronUp, ArrowLeftRight } from 'lucide-react';
 import { useState } from 'react';
 import { generateProfessionalResumePDF, generateCoverLetterPDF } from '../utils/pdfGenerator';
+import ComparisonModal from './ComparisonModal';
 
 export default function ResultsDisplay({ results }) {
   const [resumeExpanded, setResumeExpanded] = useState(true);
   const [coverLetterExpanded, setCoverLetterExpanded] = useState(true);
   const [copiedResume, setCopiedResume] = useState(false);
   const [copiedCoverLetter, setCopiedCoverLetter] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
 
   const handleCopyResume = async () => {
     await navigator.clipboard.writeText(results.tailoredResume);
@@ -25,7 +27,14 @@ export default function ResultsDisplay({ results }) {
   };
 
   const handleDownloadCoverLetter = () => {
-    generateCoverLetterPDF(results.coverLetter);
+    // Insert today's date at the top of cover letter
+    const today = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    const coverLetterWithDate = `${today}\n\n${results.coverLetter}`;
+    generateCoverLetterPDF(coverLetterWithDate);
   };
 
   return (
@@ -82,21 +91,32 @@ export default function ResultsDisplay({ results }) {
                 </pre>
               </div>
 
-              <div className="p-5 border-t border-black/10 flex gap-2 bg-white">
-                <button
-                  onClick={handleDownloadResume}
-                  className="flex-1 px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 font-bold text-white bg-black hover:bg-black/90 text-sm"
-                >
-                  <Download className="w-4 h-4" />
-                  Download PDF
-                </button>
-                <button
-                  onClick={handleCopyResume}
-                  className="px-4 py-2.5 bg-black/5 text-black rounded-lg hover:bg-black/10 transition-colors flex items-center gap-2 font-medium text-sm"
-                >
-                  <Copy className="w-4 h-4" />
-                  {copiedResume ? 'Copied!' : 'Copy'}
-                </button>
+              <div className="p-5 border-t border-black/10 bg-white space-y-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDownloadResume}
+                    className="flex-1 px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 font-bold text-white bg-black hover:bg-black/90 text-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PDF
+                  </button>
+                  <button
+                    onClick={handleCopyResume}
+                    className="px-4 py-2.5 bg-black/5 text-black rounded-lg hover:bg-black/10 transition-colors flex items-center gap-2 font-medium text-sm"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copiedResume ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                {results.originalResume && (
+                  <button
+                    onClick={() => setShowComparison(true)}
+                    className="w-full px-4 py-2.5 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
+                  >
+                    <ArrowLeftRight className="w-4 h-4" />
+                    Compare with Original
+                  </button>
+                )}
               </div>
             </>
           )}
@@ -149,6 +169,14 @@ export default function ResultsDisplay({ results }) {
           )}
         </div>
       </div>
+
+      {/* Comparison Modal */}
+      <ComparisonModal
+        isOpen={showComparison}
+        onClose={() => setShowComparison(false)}
+        originalResume={results.originalResume || 'Original resume not available'}
+        tailoredResume={results.tailoredResume}
+      />
     </div>
   );
 }

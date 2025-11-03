@@ -11,23 +11,23 @@ export default function ProcessSteps({ isLoading, hasResults }) {
   const current = hasResults ? 4 : isLoading ? 3 : 1;
 
   return (
-    <div className="mx-auto max-w-7xl px-6">
-      <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-        <ol className="grid grid-cols-4 gap-2">
+    <div className="mx-auto max-w-7xl px-6 py-2">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <ol className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {steps.map((s, idx) => {
             const Icon = s.icon;
             const state = s.key < current ? 'done' : s.key === current ? 'active' : 'idle';
-            const base = 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors';
+            const base = 'flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm border transition-all';
             const cls =
               state === 'done'
-                ? 'bg-primary-50 text-primary-700 border-primary-200'
+                ? 'bg-primary-50 text-primary-700 border-primary-200 shadow-sm'
                 : state === 'active'
-                ? 'bg-gray-100 text-gray-900 border-gray-200'
-                : 'bg-white text-gray-600 border-gray-200';
+                ? 'bg-primary-600 text-white border-primary-600 shadow-md'
+                : 'bg-white text-gray-500 border-gray-200';
             return (
               <li key={s.key} className={`${base} ${cls}`}>
                 <Icon className="w-4 h-4" />
-                <span className="font-medium">{s.title}</span>
+                <span className="font-semibold">{s.title}</span>
               </li>
             );
           })}

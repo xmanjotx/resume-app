@@ -11,6 +11,7 @@ import MatchScore from './components/MatchScore';
 import ErrorDisplay from './components/ErrorDisplay';
 import TipsPanel from './components/TipsPanel';
 import OriginalResumesFooter from './components/OriginalResumesFooter';
+import ResumeSelector from './components/ResumeSelector';
 import { tailorResume } from './utils/api';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
   const [originalResumes, setOriginalResumes] = useState([]);
   const [isLoadingResumes, setIsLoadingResumes] = useState(true);
   const [resumesFetchError, setResumesFetchError] = useState(null);
+  const [selectedResume, setSelectedResume] = useState(null); // null = auto-select
 
   const handleSubmit = async (jd) => {
     setJobDescription(jd);
@@ -37,7 +39,7 @@ function App() {
     abortControllerRef.current = new AbortController();
 
     try {
-      const data = await tailorResume(jd, abortControllerRef.current.signal);
+      const data = await tailorResume(jd, abortControllerRef.current.signal, selectedResume);
       setResults(data);
       setShowProgress(false);
     } catch (err) {
@@ -97,21 +99,27 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <TopBar />
       <Header />
-      <div className="mb-6">
+      <div className="py-4">
         <HeroFeatureStrip />
       </div>
-      <div className="mb-6">
+      <div className="py-4">
         <ProcessSteps isLoading={isLoading || showProgress} hasResults={!!results} />
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-6">
         <ErrorDisplay error={error} onDismiss={handleDismissError} />
 
         <div className="space-y-8">
           {/* Primary grid: JD input + tips/analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-4">
               <JobDescriptionInput onSubmit={handleSubmit} isLoading={isLoading} onChangeJD={setJobDescription} value={jobDescription} />
+              <ResumeSelector
+                resumes={originalResumes}
+                selectedResume={selectedResume}
+                onSelect={setSelectedResume}
+                isLoading={isLoadingResumes}
+              />
             </div>
             <div className="lg:col-span-1">
               {jobDescription ? (

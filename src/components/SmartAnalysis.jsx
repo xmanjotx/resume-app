@@ -113,40 +113,38 @@ export default function SmartAnalysis({ jobDescription }) {
   };
 
   return (
-    <div className="bg-white border border-black/10 rounded-2xl p-6 mb-6 hover:border-black/20 transition-colors">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="p-2 rounded-lg bg-black">
+    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-primary-200 transition-all">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 rounded-lg bg-primary-600">
           <Brain className="w-4 h-4 text-white" />
         </div>
-        <h3 className="text-base font-bold text-black">Smart Job Analysis</h3>
+        <h3 className="text-base font-bold text-gray-900">Smart Job Analysis</h3>
       </div>
 
-      {/* Analysis Badges - 4 Column Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      {/* Analysis Badges - Responsive Grid */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
         {/* Seniority Level */}
-        <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-center">
+        <div className="p-3 rounded-xl bg-purple-50 border border-purple-200">
           <div className="text-xs font-medium text-purple-600 mb-1">Seniority</div>
           <div className="text-sm font-bold text-purple-700 capitalize">{analysis.seniority}</div>
         </div>
 
         {/* Years Required */}
         {analysis.yearsRequired && (
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
             <div className="text-xs font-medium text-amber-600 mb-1">Experience</div>
-            <div className="text-sm font-bold text-amber-700">{analysis.yearsRequired}+</div>
-            <div className="text-xs text-amber-600">years</div>
+            <div className="text-sm font-bold text-amber-700">{analysis.yearsRequired}+ years</div>
           </div>
         )}
 
         {/* Job Type */}
-        <div className="p-4 rounded-2xl bg-cyan-50 border border-cyan-200 text-center">
-          <div className="text-xs font-medium text-cyan-600 mb-1">Work</div>
-          <div className="text-xs font-bold text-cyan-700">Type</div>
-          <div className="text-xs text-cyan-600 capitalize mt-1">{analysis.jobType}</div>
+        <div className="p-3 rounded-xl bg-cyan-50 border border-cyan-200">
+          <div className="text-xs font-medium text-cyan-600 mb-1">Work Type</div>
+          <div className="text-sm font-bold text-cyan-700 capitalize">{analysis.jobType}</div>
         </div>
 
         {/* Complexity */}
-        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-center">
+        <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200">
           <div className="text-xs font-medium text-indigo-600 mb-1">Complexity</div>
           <div className="text-sm font-bold text-indigo-700">{getComplexityLabel(analysis.complexity)}</div>
         </div>
@@ -155,15 +153,15 @@ export default function SmartAnalysis({ jobDescription }) {
       {/* Top Skills */}
       {analysis.skills.length > 0 && (
         <div className="mb-6">
-          <div className="text-sm font-bold text-black mb-3 flex items-center gap-2">
-            <Zap className="w-4 h-4" />
+          <div className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-500" />
             Key Skills Detected
           </div>
           <div className="flex flex-wrap gap-2">
             {analysis.skills.map((skill, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1.5 bg-white border border-black/10 rounded-full text-xs font-medium text-black/70 hover:border-black/30 hover:bg-black/5 transition-all"
+                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 transition-all"
               >
                 {skill}
               </span>
@@ -173,13 +171,13 @@ export default function SmartAnalysis({ jobDescription }) {
       )}
 
       {/* Smart Insights */}
-      <div className="p-4 bg-white border border-black/10 rounded-xl">
+      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
         <div className="flex gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-black/80">
-            <span className="font-bold">Smart Tip:</span> This is a{' '}
-            <span className="font-bold text-black">{analysis.seniority}-level</span> position requiring{' '}
-            <span className="font-bold text-black">{analysis.yearsRequired ? `${analysis.yearsRequired}+ years` : 'varied'}</span>{' '}
+          <div className="text-sm text-gray-800 leading-relaxed">
+            <span className="font-bold text-emerald-700">Smart Tip:</span> This is a{' '}
+            <span className="font-bold text-gray-900">{analysis.seniority}-level</span> position requiring{' '}
+            <span className="font-bold text-gray-900">{analysis.yearsRequired ? `${analysis.yearsRequired}+ years` : 'varied'}</span>{' '}
             of experience. Focus on relevant achievements and quantifiable results.
           </div>
         </div>
