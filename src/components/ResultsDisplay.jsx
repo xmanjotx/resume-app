@@ -1,41 +1,59 @@
-import { CheckCircle, FileText, Mail, Download, Copy, ChevronDown, ChevronUp, ArrowLeftRight } from 'lucide-react';
+import { CheckCircle, FileText, Mail, Download, Copy, ArrowLeftRight } from 'lucide-react';
 import { useState } from 'react';
 import { generateProfessionalResumePDF, generateCoverLetterPDF } from '../utils/pdfGenerator';
 import ComparisonModal from './ComparisonModal';
-import PDFPreview from './PDFPreview';
+import PDFPreviewModal from './PDFPreviewModal';
 
 export default function ResultsDisplay({ results }) {
-  const [resumeExpanded, setResumeExpanded] = useState(true);
-  const [coverLetterExpanded, setCoverLetterExpanded] = useState(true);
   const [copiedResume, setCopiedResume] = useState(false);
   const [copiedCoverLetter, setCopiedCoverLetter] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [showResumePreview, setShowResumePreview] = useState(false);
+  const [showCoverLetterPreview, setShowCoverLetterPreview] = useState(false);
+
+  const cleanCoverLetter = (text) => {
+    // Remove placeholders like [Company Name], [Hiring Manager's Name], etc.
+    return text.replace(/\[(.*?)\]/g, '').replace(/\n\n\n/g, '\n\n');
+  };
+
+  const formatResumeForATS = (text) => {
+    // Replace common unicode bullets with a standard hyphen for ATS compatibility
+    return text.replace(/[•●▪]/g, '-');
+  };
+
+  const finalResume = formatResumeForATS(results.tailoredResume);
+  const finalCoverLetter = cleanCoverLetter(results.coverLetter);
 
   const handleCopyResume = async () => {
-    await navigator.clipboard.writeText(results.tailoredResume);
+    await navigator.clipboard.writeText(finalResume);
     setCopiedResume(true);
     setTimeout(() => setCopiedResume(false), 2000);
   };
 
   const handleCopyCoverLetter = async () => {
-    await navigator.clipboard.writeText(results.coverLetter);
+    await navigator.clipboard.writeText(finalCoverLetter);
     setCopiedCoverLetter(true);
     setTimeout(() => setCopiedCoverLetter(false), 2000);
   };
 
   const handleDownloadResume = () => {
-    generateProfessionalResumePDF(results.tailoredResume, 'Tailored_Resume');
+    generateProfessionalResumePDF(finalResume, 'Tailored_Resume', false);
+  };
+
+  const resumePdfGenerator = async (content) => {
+    return await generateProfessionalResumePDF(content, 'Tailored_Resume', true);
   };
 
   const handleDownloadCoverLetter = () => {
-    // Insert today's date at the top of cover letter
-    const today = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    const coverLetterWithDate = `${today}\n\n${results.coverLetter}`;
-    generateCoverLetterPDF(coverLetterWithDate);
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const coverLetterWithDate = `${today}\n\n${finalCoverLetter}`;
+    generateCoverLetterPDF(coverLetterWithDate, false);
+  };
+
+  const coverLetterPdfGenerator = async (content) => {
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const coverLetterWithDate = `${today}\n\n${content}`;
+    return await generateCoverLetterPDF(coverLetterWithDate, true);
   };
 
   return (
@@ -65,44 +83,73 @@ export default function ResultsDisplay({ results }) {
 
       {/* Resume and Cover Letter Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tailored Resume */}
-        <div>
-          <PDFPreview
-            title="Tailored Resume"
-            content={results.tailoredResume}
-            onDownload={handleDownloadResume}
-            onCopy={handleCopyResume}
-            copied={copiedResume}
-          />
-          {results.originalResume && (
-            <button
-              onClick={() => setShowComparison(true)}
-              className="w-full mt-3 px-4 py-2.5 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
-            >
-              <ArrowLeftRight className="w-4 h-4" />
-              Compare with Original
-            </button>
-          )}
+        {/* Tailored Resume Card */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
+              <FileText className="w-5 h-5 text-primary-600" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900">Tailored Resume</h3>
+          </div>
+          <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto">{finalResume}</pre>
+          <div className="flex gap-2">
+            <button onClick={() => setShowResumePreview(true)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Preview</button>
+            <button onClick={handleDownloadResume} className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download</button>
+          </div>
         </div>
 
-        {/* Cover Letter */}
-        <div>
-          <PDFPreview
-            title="Cover Letter"
-            content={results.coverLetter}
-            onDownload={handleDownloadCoverLetter}
-            onCopy={handleCopyCoverLetter}
-            copied={copiedCoverLetter}
-          />
+        {/* Cover Letter Card */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-50 border border-primary-200">
+              <Mail className="w-5 h-5 text-primary-600" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900">Cover Letter</h3>
+          </div>
+          <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto">{finalCoverLetter}</pre>
+          <div className="flex gap-2">
+            <button onClick={() => setShowCoverLetterPreview(true)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Preview</button>
+            <button onClick={handleDownloadCoverLetter} className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download</button>
+          </div>
         </div>
       </div>
 
       {/* Comparison Modal */}
+      {results.originalResume && (
+        <div className="text-center mt-4">
+          <button onClick={() => setShowComparison(true)} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-semibold text-gray-800 hover:bg-gray-50 flex items-center gap-2 mx-auto">
+            <ArrowLeftRight className="w-4 h-4" />
+            Compare with Original
+          </button>
+        </div>
+      )}
       <ComparisonModal
         isOpen={showComparison}
         onClose={() => setShowComparison(false)}
         originalResume={results.originalResume || 'Original resume not available'}
-        tailoredResume={results.tailoredResume}
+        tailoredResume={finalResume}
+      />
+
+      {/* PDF Preview Modals */}
+      <PDFPreviewModal
+        isOpen={showResumePreview}
+        onClose={() => setShowResumePreview(false)}
+        title="Tailored Resume Preview"
+        content={finalResume}
+        pdfGenerator={resumePdfGenerator}
+        onDownload={handleDownloadResume}
+        onCopy={handleCopyResume}
+        copied={copiedResume}
+      />
+      <PDFPreviewModal
+        isOpen={showCoverLetterPreview}
+        onClose={() => setShowCoverLetterPreview(false)}
+        title="Cover Letter Preview"
+        content={finalCoverLetter}
+        pdfGenerator={coverLetterPdfGenerator}
+        onDownload={handleDownloadCoverLetter}
+        onCopy={handleCopyCoverLetter}
+        copied={copiedCoverLetter}
       />
     </div>
   );

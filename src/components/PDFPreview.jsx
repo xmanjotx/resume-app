@@ -1,11 +1,30 @@
-import { useState, useRef } from 'react';
-import { Download, Copy, Eye, EyeOff } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import { Download, Copy, Eye, EyeOff, Loader2 } from 'lucide-react';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-export default function PDFPreview({ title, content, onDownload, onCopy, copied }) {
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+export default function PDFPreview({ title, content, onDownload, onCopy, copied, pdfGenerator }) {
   const [showPreview, setShowPreview] = useState(false);
   const [dividerPos, setDividerPos] = useState(50);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const containerRef = useRef(null);
   const isDraggingRef = useRef(false);
+
+  useEffect(() => {
+    if (showPreview && !pdfUrl && pdfGenerator) {
+      setPdfLoading(true);
+      const generate = async () => {
+        const pdfBlob = await pdfGenerator(content);
+        setPdfUrl(URL.createObjectURL(pdfBlob));
+        setPdfLoading(false);
+      };
+      generate();
+    }
+  }, [showPreview, pdfUrl, content, pdfGenerator]);
 
   const handleMouseDown = () => {
     isDraggingRef.current = true;
@@ -65,12 +84,20 @@ export default function PDFPreview({ title, content, onDownload, onCopy, copied 
             style={{ userSelect: 'none' }}
           />
 
-          {/* PDF Preview (placeholder) */}
-          <div style={{ width: `${100 - dividerPos}%` }} className="overflow-y-auto p-4 bg-gray-100 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-sm font-medium">PDF Preview</div>
-              <div className="text-xs mt-1">Drag divider to adjust</div>
-            </div>
+          {/* PDF Preview */}
+          <div style={{ width: `${100 - dividerPos}%` }} className="overflow-y-auto bg-gray-100 flex items-center justify-center">
+            {pdfLoading ? (
+              <div className="flex flex-col items-center gap-2 text-gray-500">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-sm font-medium">Generating PDF Preview...</span>
+              </div>
+            ) : pdfUrl ? (
+              <Document file={pdfUrl}>
+                <Page pageNumber={1} width={containerRef.current ? (containerRef.current.clientWidth * (100 - dividerPos)) / 100 - 32 : 300} />
+              </Document>
+            ) : (
+              <div className="text-center text-gray-500">PDF preview will appear here.</div>
+            )}
           </div>
         </div>
       ) : (

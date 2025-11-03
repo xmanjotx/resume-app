@@ -13,7 +13,7 @@ import { jsPDF } from 'jspdf';
  * - Simple text-based layout
  */
 
-export function generatePDF(content, filename, title = '') {
+export function generatePDF(content, filename, title = '', asBlob = false) {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -107,9 +107,11 @@ export function generatePDF(content, filename, title = '') {
 
   // Generate filename with timestamp
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-  const finalFilename = `${filename}_${timestamp}.pdf`;
+  if (asBlob) {
+    return doc.output('blob');
+  }
 
-  // Save the PDF
+  const finalFilename = `${filename}_${timestamp}.pdf`;
   doc.save(finalFilename);
 }
 
@@ -134,8 +136,8 @@ export function generateOriginalResumePDF(resumeContent) {
  * Generate cover letter PDF
  * @param {string} coverLetterContent - The cover letter text content
  */
-export function generateCoverLetterPDF(coverLetterContent) {
-  generatePDF(coverLetterContent, 'Cover_Letter', '');
+export function generateCoverLetterPDF(coverLetterContent, asBlob = false) {
+  return generatePDF(coverLetterContent, 'Cover_Letter', '', asBlob);
 }
 
 /**
@@ -143,124 +145,141 @@ export function generateCoverLetterPDF(coverLetterContent) {
  * Best practices for IT/Architecture roles with optimal font sizing and spacing
  * Based on 2024-2025 ATS standards and professional resume design
  */
-export function generateProfessionalResumePDF(resumeContent, filename = 'Professional_Resume') {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-  });
+const icons = {
+  phone: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAFNJREFUOE9jZKAQMFKon4F4CyzHSAgAnz4s+A/F/4T4Hw1/NPxH438y/IfxP5L/V/B/I/83/j/D/2v+3wB/Bf5f9v8D/1/8/wP/X/z/A/9f/H8A/wD/X/z/A/8A/wD/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwx/AQAASs4z3d2/9ZAAAAAASUVORK5CYII=',
+  email: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAIJJREFUOE9jZKAQMFKon4F4CyzHSAgAnz4s+A/F/4T4Hw1/NPxH438y/IfxP5L/V/B/I/83/j/D/2v+3wB/Bf5f9v8D/1/8/wP/X/z/A/9f/H8A/wD/X/z/A/8A/wD/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwx/AQAASs4z3d2/9ZAAAAAASUVORK5CYII=',
+  linkedin: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAHBJREFUOE9jZKAQMFKon4F4CyzHSAgAnz4s+A/F/4T4Hw1/NPxH438y/IfxP5L/V/B/I/83/j/D/2v+3wB/Bf5f9v8D/1/8/wP/X/z/A/9f/H8A/wD/X/z/A/8A/wD/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwx/AQAASs4z3d2/9ZAAAAAASUVORK5CYII=',
+  location: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAHZJREFUOE9jZKAQMFKon4F4CyzHSAgAnz4s+A/F/4T4Hw1/NPxH438y/IfxP5L/V/B/I/83/j/D/2v+3wB/Bf5f9v8D/1/8/wP/X/z/A/9f/H8A/wD/X/z/A/8A/wD/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwx/AQAASs4z3d2/9ZAAAAAASUVORK5CYII='
+};
 
-  // OPTIMAL SETTINGS FOR IT ARCHITECT RESUMES
-  // Font: Calibri (best for IT/tech roles, highly ATS-friendly)
-  // Based on Microsoft Word and LinkedIn best practices
-  const FONT_FAMILY = 'Calibri';
-  
-  // Font Sizes (optimized for readability + ATS)
-  const NAME_FONT_SIZE = 14;           // Professional, not too large
-  const SECTION_HEADING_SIZE = 11;     // Clear section breaks
-  const COMPANY_ROLE_SIZE = 10;        // Company name
-  const BODY_FONT_SIZE = 10;           // Standard body text
-  const DATE_FONT_SIZE = 9.5;          // Dates (slightly smaller)
-  
-  // Margins: 1 inch (25.4mm) standard for professional resumes
-  const TOP_MARGIN = 12.7;      // 0.5 inch
-  const LEFT_MARGIN = 12.7;     // 0.5 inch
-  const RIGHT_MARGIN = 12.7;    // 0.5 inch
-  const BOTTOM_MARGIN = 12.7;   // 0.5 inch
-  
+export function generateProfessionalResumePDF(resumeContent, filename = 'Professional_Resume', asBlob = false) {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // --- TEMPLATE STYLING ---
+  const NAME_FONT_SIZE = 24;
+  const SUBTITLE_FONT_SIZE = 10;
+  const SECTION_HEADING_SIZE = 9;
+  const BODY_FONT_SIZE = 9;
+  const CONTACT_FONT_SIZE = 9;
+
+  const FONT_FAMILY_HEAVY = 'Helvetica'; // For name
+  const FONT_FAMILY_NORMAL = 'Helvetica'; // For body
+
+  const PRIMARY_COLOR = '#003366'; // Dark blue
+  const TEXT_COLOR = '#333333';
+  const LIGHT_TEXT_COLOR = '#666666';
+
+  const LEFT_MARGIN = 15;
+  const RIGHT_MARGIN = 15;
+  const TOP_MARGIN = 15;
+  const BOTTOM_MARGIN = 15;
+  const COLUMN_GAP = 10;
+  const LEFT_COLUMN_WIDTH = 60;
+
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const maxWidth = pageWidth - (LEFT_MARGIN + RIGHT_MARGIN);
-  
-  // Spacing (optimized for readability)
-  const LINE_HEIGHT = 4.8;              // 1.15 line spacing (professional standard)
-  const SECTION_SPACING = 3;            // Space between sections
-  const SUBSECTION_SPACING = 1.5;       // Space within sections
-  const BULLET_INDENT = 4;              // Bullet point indentation
+  const rightColumnWidth = pageWidth - LEFT_MARGIN - RIGHT_MARGIN - LEFT_COLUMN_WIDTH - COLUMN_GAP;
+  const rightColumnX = LEFT_MARGIN + LEFT_COLUMN_WIDTH + COLUMN_GAP;
 
-  let yPosition = TOP_MARGIN;
-  let isFirstLine = true;
+  let leftY = TOP_MARGIN + 30; // Start Y position for left column
+  let rightY = TOP_MARGIN + 30; // Start Y position for right column
 
+  // --- HEADER ---
   const lines = resumeContent.split('\n');
+  const name = lines.shift() || 'Your Name';
+  const subtitle = lines.shift() || 'Your Professional Title';
+  const contactInfo = lines.splice(0, 3);
 
-  lines.forEach((line, index) => {
-    // Smart page break (leave room for footer)
-    if (yPosition > pageHeight - BOTTOM_MARGIN - 5) {
-      doc.addPage();
-      yPosition = TOP_MARGIN;
-    }
+  doc.setFont(FONT_FAMILY_HEAVY, 'bold');
+  doc.setFontSize(NAME_FONT_SIZE);
+  doc.setTextColor(PRIMARY_COLOR);
+  doc.text(name.toUpperCase(), LEFT_MARGIN, TOP_MARGIN + 5);
 
-    if (line.trim() === '') {
-      yPosition += SUBSECTION_SPACING;
-      return;
-    }
+  doc.setFont(FONT_FAMILY_NORMAL, 'normal');
+  doc.setFontSize(SUBTITLE_FONT_SIZE);
+  doc.setTextColor(TEXT_COLOR);
+  doc.text(subtitle, LEFT_MARGIN, TOP_MARGIN + 12);
 
-    const trimmedLine = line.trim();
-    const isAllCaps = trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 3;
-    const isBulletPoint = trimmedLine.startsWith('•') || trimmedLine.startsWith('-');
-    const isNameOrTitle = isFirstLine && trimmedLine.length < 50;
-    const hasDate = /\d{4}|January|February|March|April|May|June|July|August|September|October|November|December|Present|Current/.test(trimmedLine);
-    const isCompanyRole = /^[A-Z][a-zA-Z\s]+$/.test(trimmedLine) && trimmedLine.length > 5 && trimmedLine.length < 60 && !isAllCaps;
+  doc.setDrawColor(PRIMARY_COLOR);
+  doc.setLineWidth(0.5);
+  doc.line(LEFT_MARGIN, TOP_MARGIN + 15, pageWidth - RIGHT_MARGIN, TOP_MARGIN + 15);
 
-    // Determine font and size
-    if (isNameOrTitle) {
-      // Name header - bold, professional size
-      doc.setFont(FONT_FAMILY, 'bold');
-      doc.setFontSize(NAME_FONT_SIZE);
-      isFirstLine = false;
-    } else if (isAllCaps && trimmedLine.length < 40) {
-      // Section headers - bold, with visual separator
-      doc.setFont(FONT_FAMILY, 'bold');
-      doc.setFontSize(SECTION_HEADING_SIZE);
-      yPosition += LINE_HEIGHT * 0.5;
-      
-      // Add subtle underline for section headers
-      const textWidth = doc.getTextWidth(trimmedLine);
-      doc.setDrawColor(0);
-      doc.setLineWidth(0.3);
-      doc.line(LEFT_MARGIN, yPosition + 1, LEFT_MARGIN + textWidth, yPosition + 1);
-    } else if (isBulletPoint) {
-      // Bullet points - regular weight, standard size
-      doc.setFont(FONT_FAMILY, 'normal');
-      doc.setFontSize(BODY_FONT_SIZE);
-    } else if (hasDate) {
-      // Dates and duration - slightly smaller, italic
-      doc.setFont(FONT_FAMILY, 'italic');
-      doc.setFontSize(DATE_FONT_SIZE);
-    } else if (isCompanyRole) {
-      // Company/Role names - bold, professional
-      doc.setFont(FONT_FAMILY, 'bold');
-      doc.setFontSize(COMPANY_ROLE_SIZE);
-    } else {
-      // Regular body text
-      doc.setFont(FONT_FAMILY, 'normal');
-      doc.setFontSize(BODY_FONT_SIZE);
-    }
+  doc.setFontSize(CONTACT_FONT_SIZE);
+  doc.setTextColor(LIGHT_TEXT_COLOR);
+  let contactX = LEFT_MARGIN;
+  const contactItems = contactInfo.map(info => {
+    if (info.includes('@')) return { text: info, icon: icons.email };
+    if (info.includes('linkedin')) return { text: info, icon: icons.linkedin };
+    if (info.match(/\d{3}/)) return { text: info, icon: icons.phone };
+    return { text: info, icon: icons.location };
+  });
 
-    // Split long lines for proper wrapping
-    const splitLines = doc.splitTextToSize(trimmedLine, maxWidth - (isBulletPoint ? BULLET_INDENT : 0));
-
-    splitLines.forEach((splitLine, splitIndex) => {
-      // Check page break for wrapped lines
-      if (yPosition > pageHeight - BOTTOM_MARGIN - 5) {
-        doc.addPage();
-        yPosition = TOP_MARGIN;
-      }
-
-      // Position text (indent bullets)
-      const xPosition = isBulletPoint && splitIndex === 0 ? LEFT_MARGIN + BULLET_INDENT : LEFT_MARGIN;
-      doc.text(splitLine, xPosition, yPosition);
-      yPosition += LINE_HEIGHT;
-    });
-
-    // Add spacing after section headers
-    if (isAllCaps && trimmedLine.length < 40) {
-      yPosition += SECTION_SPACING;
+  contactItems.forEach(item => {
+    if (item.text.trim()) {
+      doc.addImage(item.icon, 'PNG', contactX, TOP_MARGIN + 19, 4, 4);
+      doc.text(item.text.trim(), contactX + 5, TOP_MARGIN + 22);
+      contactX += doc.getTextWidth(item.text.trim()) + 15;
     }
   });
 
-  // Generate filename with timestamp
+  // --- BODY ---
+  const sections = {};
+  let currentSection = 'SUMMARY'; // Default section
+  lines.forEach(line => {
+    const trimmedLine = line.trim();
+    if (trimmedLine.endsWith(':') && trimmedLine.length < 30) {
+      currentSection = trimmedLine.slice(0, -1).toUpperCase();
+      sections[currentSection] = sections[currentSection] || [];
+    } else if (trimmedLine) {
+      sections[currentSection] = sections[currentSection] || [];
+      sections[currentSection].push(line);
+    }
+  });
+
+  const drawSection = (title, content, column) => {
+    let yPos = column === 'left' ? leftY : rightY;
+    const xPos = column === 'left' ? LEFT_MARGIN : rightColumnX;
+    const colWidth = column === 'left' ? LEFT_COLUMN_WIDTH : rightColumnWidth;
+
+    doc.setFont(FONT_FAMILY_HEAVY, 'bold');
+    doc.setFontSize(SECTION_HEADING_SIZE);
+    doc.setTextColor(PRIMARY_COLOR);
+    doc.text(title, xPos, yPos);
+    doc.setDrawColor(PRIMARY_COLOR);
+    doc.setLineWidth(0.2);
+    doc.line(xPos, yPos + 1, xPos + colWidth, yPos + 1);
+    yPos += 5;
+
+    doc.setFont(FONT_FAMILY_NORMAL, 'normal');
+    doc.setFontSize(BODY_FONT_SIZE);
+    doc.setTextColor(TEXT_COLOR);
+
+    content.forEach(line => {
+      const splitLines = doc.splitTextToSize(line, colWidth);
+      splitLines.forEach(l => {
+        doc.text(l, xPos, yPos);
+        yPos += 4;
+      });
+    });
+    yPos += 5;
+
+    if (column === 'left') leftY = yPos;
+    else rightY = yPos;
+  };
+
+  // Draw sections into columns
+  if (sections['SUMMARY']) drawSection('SUMMARY', sections['SUMMARY'], 'left');
+  if (sections['PROJECTS']) drawSection('PROJECTS', sections['PROJECTS'], 'left');
+  if (sections['KEY ACHIEVEMENTS']) drawSection('KEY ACHIEVEMENTS', sections['KEY ACHIEVEMENTS'], 'left');
+  if (sections['SKILLS']) drawSection('SKILLS', sections['SKILLS'], 'left');
+  
+  if (sections['EXPERIENCE']) drawSection('EXPERIENCE', sections['EXPERIENCE'], 'right');
+  if (sections['EDUCATION']) drawSection('EDUCATION', sections['EDUCATION'], 'right');
+
+  // --- FOOTER / SAVE ---
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+  if (asBlob) {
+    return doc.output('blob');
+  }
   const finalFilename = `${filename}_${timestamp}.pdf`;
   doc.save(finalFilename);
 }
