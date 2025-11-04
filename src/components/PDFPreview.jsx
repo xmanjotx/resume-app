@@ -1,30 +1,69 @@
 import { useState, useRef, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { Download, Copy, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Download, Copy, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+// Optimize PDF.js rendering
+pdfjs.GlobalWorkerOptions.cMapUrl = `//unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`;
+pdfjs.GlobalWorkerOptions.cMapPacked = true;
 
 export default function PDFPreview({ title, content, onDownload, onCopy, copied, pdfGenerator }) {
   const [showPreview, setShowPreview] = useState(false);
   const [dividerPos, setDividerPos] = useState(50);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [error, setError] = useState(null);
   const containerRef = useRef(null);
   const isDraggingRef = useRef(false);
+  const abortControllerRef = useRef(null);
 
   useEffect(() => {
     if (showPreview && !pdfUrl && pdfGenerator) {
       setPdfLoading(true);
-      const generate = async () => {
-        const pdfBlob = await pdfGenerator(content);
-        setPdfUrl(URL.createObjectURL(pdfBlob));
+      setError(null);
+      abortControllerRef.current = new AbortController();
+      
+      const timeoutId = setTimeout(() => {
+        abortControllerRef.current?.abort();
+        setError('PDF generation timed out. Please try again.');
         setPdfLoading(false);
+      }, 15000); // 15 second timeout
+
+      const generate = async () => {
+        try {
+          const pdfBlob = await pdfGenerator(content);
+          if (abortControllerRef.current?.signal.aborted) return;
+          
+          setPdfUrl(URL.createObjectURL(pdfBlob));
+          setError(null);
+        } catch (e) {
+          if (abortControllerRef.current?.signal.aborted) return;
+          console.error('Failed to generate PDF preview', e);
+          setError('Failed to generate PDF preview. Please try again.');
+        } finally {
+          clearTimeout(timeoutId);
+          setPdfLoading(false);
+        }
       };
       generate();
     }
-  }, [showPreview, pdfUrl, content, pdfGenerator]);
+    if (!showPreview) {
+      abortControllerRef.current?.abort();
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+      setError(null);
+    }
+  }, [showPreview, content, pdfGenerator]);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, []);
 
   const handleMouseDown = () => {
     isDraggingRef.current = true;
@@ -86,14 +125,42 @@ export default function PDFPreview({ title, content, onDownload, onCopy, copied,
 
           {/* PDF Preview */}
           <div style={{ width: `${100 - dividerPos}%` }} className="overflow-y-auto bg-gray-100 flex items-center justify-center">
-            {pdfLoading ? (
+            {error ? (
+              <div className="flex flex-col items-center gap-2 text-red-600 text-center px-4">
+                <AlertCircle className="w-6 h-6" />
+                <span className="text-sm font-medium">{error}</span>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    setPdfUrl(null);
+                  }}
+                  className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-xs font-medium transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : pdfLoading ? (
               <div className="flex flex-col items-center gap-2 text-gray-500">
                 <Loader2 className="w-6 h-6 animate-spin" />
                 <span className="text-sm font-medium">Generating PDF Preview...</span>
+                <span className="text-xs text-gray-400">Up to 15 seconds</span>
               </div>
             ) : pdfUrl ? (
-              <Document file={pdfUrl}>
-                <Page pageNumber={1} width={containerRef.current ? (containerRef.current.clientWidth * (100 - dividerPos)) / 100 - 32 : 300} />
+              <Document 
+                file={pdfUrl}
+                onLoadError={(err) => {
+                  console.error('PDF load error:', err);
+                  setError('Failed to load PDF. Please try again.');
+                }}
+                loading={<div className="text-gray-400 text-xs">Loading PDF...</div>}
+              >
+                <Page 
+                  pageNumber={1} 
+                  width={containerRef.current ? (containerRef.current.clientWidth * (100 - dividerPos)) / 100 - 32 : 300}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  loading={<div className="text-gray-300 text-xs">Loading page...</div>}
+                />
               </Document>
             ) : (
               <div className="text-center text-gray-500">PDF preview will appear here.</div>

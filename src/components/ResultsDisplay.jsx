@@ -2,14 +2,11 @@ import { CheckCircle, FileText, Mail, Download, Copy, ArrowLeftRight } from 'luc
 import { useState } from 'react';
 import { generateProfessionalResumePDF, generateCoverLetterPDF } from '../utils/pdfGenerator';
 import ComparisonModal from './ComparisonModal';
-import PDFPreviewModal from './PDFPreviewModal';
 
 export default function ResultsDisplay({ results }) {
   const [copiedResume, setCopiedResume] = useState(false);
   const [copiedCoverLetter, setCopiedCoverLetter] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const [showResumePreview, setShowResumePreview] = useState(false);
-  const [showCoverLetterPreview, setShowCoverLetterPreview] = useState(false);
 
   const cleanCoverLetter = (text) => {
     // Remove placeholders like [Company Name], [Hiring Manager's Name], etc.
@@ -59,20 +56,10 @@ export default function ResultsDisplay({ results }) {
     generateProfessionalResumePDF(finalResume, 'Tailored_Resume', false);
   };
 
-  const resumePdfGenerator = async (content) => {
-    return await generateProfessionalResumePDF(content, 'Tailored_Resume', true);
-  };
-
   const handleDownloadCoverLetter = () => {
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const coverLetterWithDate = `${today}\n\n${finalCoverLetter}`;
     generateCoverLetterPDF(coverLetterWithDate, false);
-  };
-
-  const coverLetterPdfGenerator = async (content) => {
-    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const coverLetterWithDate = `${today}\n\n${content}`;
-    return await generateCoverLetterPDF(coverLetterWithDate, true);
   };
 
   return (
@@ -111,10 +98,7 @@ export default function ResultsDisplay({ results }) {
             <h3 className="text-base font-bold text-gray-900">Tailored Resume</h3>
           </div>
           <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-white/40 border border-white/40 p-4 rounded-lg max-h-60 overflow-y-auto">{finalResume}</pre>
-          <div className="flex gap-2">
-            <button onClick={() => setShowResumePreview(true)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Preview</button>
-            <button onClick={handleDownloadResume} className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download</button>
-          </div>
+          <button onClick={handleDownloadResume} className="w-full px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download Resume</button>
         </div>
 
         {/* Cover Letter Card */}
@@ -126,10 +110,7 @@ export default function ResultsDisplay({ results }) {
             <h3 className="text-base font-bold text-gray-900">Cover Letter</h3>
           </div>
           <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-white/40 border border-white/40 p-4 rounded-lg max-h-60 overflow-y-auto">{finalCoverLetter}</pre>
-          <div className="flex gap-2">
-            <button onClick={() => setShowCoverLetterPreview(true)} className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Preview</button>
-            <button onClick={handleDownloadCoverLetter} className="flex-1 px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download</button>
-          </div>
+          <button onClick={handleDownloadCoverLetter} className="w-full px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download Letter</button>
         </div>
       </div>
 
@@ -147,28 +128,6 @@ export default function ResultsDisplay({ results }) {
         onClose={() => setShowComparison(false)}
         originalResume={results.originalResume || 'Original resume not available'}
         tailoredResume={finalResume}
-      />
-
-      {/* PDF Preview Modals */}
-      <PDFPreviewModal
-        isOpen={showResumePreview}
-        onClose={() => setShowResumePreview(false)}
-        title="Tailored Resume Preview"
-        content={finalResume}
-        pdfGenerator={resumePdfGenerator}
-        onDownload={handleDownloadResume}
-        onCopy={handleCopyResume}
-        copied={copiedResume}
-      />
-      <PDFPreviewModal
-        isOpen={showCoverLetterPreview}
-        onClose={() => setShowCoverLetterPreview(false)}
-        title="Cover Letter Preview"
-        content={finalCoverLetter}
-        pdfGenerator={coverLetterPdfGenerator}
-        onDownload={handleDownloadCoverLetter}
-        onCopy={handleCopyCoverLetter}
-        copied={copiedCoverLetter}
       />
     </div>
   );

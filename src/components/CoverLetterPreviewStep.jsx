@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Mail, Edit } from 'lucide-react';
-import PDFPreviewModal from './PDFPreviewModal';
 
-export default function CoverLetterPreviewStep({ coverLetterContent, onNext, onBack, onContentChange, pdfGenerator }) {
+export default function CoverLetterPreviewStep({ coverLetterContent, onNext, onBack, onContentChange }) {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(coverLetterContent);
-  const [showPreview, setShowPreview] = useState(false);
 
   const handleSave = () => {
     onContentChange(content);
@@ -37,23 +35,12 @@ export default function CoverLetterPreviewStep({ coverLetterContent, onNext, onB
 
       <div className="p-5 border-t border-gray-200 flex justify-between">
         <button onClick={onBack} className="px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Back</button>
-        <div className="flex gap-3">
-          <button onClick={() => setShowPreview(true)} className="px-4 py-2.5 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 font-semibold text-sm">Full Preview</button>
-          {isEditing ? (
-            <button onClick={handleSave} className="px-6 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Save & Next</button>
-          ) : (
-            <button onClick={onNext} className="px-6 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Next</button>
-          )}
-        </div>
+        {isEditing ? (
+          <button onClick={handleSave} className="px-6 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Save & Next</button>
+        ) : (
+          <button onClick={onNext} className="px-6 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Next</button>
+        )}
       </div>
-
-      <PDFPreviewModal
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        title="Cover Letter Preview"
-        content={content}
-        pdfGenerator={pdfGenerator}
-      />
     </div>
   );
 }
