@@ -1,4 +1,4 @@
-import { CheckCircle, FileText, Mail, Download, Copy, ArrowLeftRight } from 'lucide-react';
+import { CheckCircle, FileText, Mail, Download, Copy, ArrowLeftRight, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { generateProfessionalResumePDF, generateCoverLetterPDF } from '../utils/pdfGenerator';
 import ComparisonModal from './ComparisonModal';
@@ -7,10 +7,38 @@ export default function ResultsDisplay({ results }) {
   const [copiedResume, setCopiedResume] = useState(false);
   const [copiedCoverLetter, setCopiedCoverLetter] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [isDownloadingResume, setIsDownloadingResume] = useState(false);
+  const [isDownloadingLetter, setIsDownloadingLetter] = useState(false);
 
   const cleanCoverLetter = (text) => {
-    // Remove placeholders like [Company Name], [Hiring Manager's Name], etc.
-    return text.replace(/\[(.*?)\]/g, '').replace(/\n\n\n/g, '\n\n');
+    // Fill in placeholders with extracted job details or remove them
+    let cleanedText = text;
+    
+    // Replace [COMPANY NAME] with extracted company name or remove
+    if (results.jobDetails?.companyName) {
+      cleanedText = cleanedText.replace(/\[COMPANY NAME\]/gi, results.jobDetails.companyName);
+    } else {
+      cleanedText = cleanedText.replace(/\[COMPANY NAME\]/gi, '');
+    }
+    
+    // Replace [HIRING MANAGER'S NAME] with extracted name or remove
+    if (results.jobDetails?.hiringManager) {
+      cleanedText = cleanedText.replace(/\[HIRING MANAGER'?S NAME\]/gi, results.jobDetails.hiringManager);
+    } else {
+      cleanedText = cleanedText.replace(/\[HIRING MANAGER'?S NAME\]/gi, 'Hiring Manager');
+    }
+    
+    // Replace [COMPANY ADDRESS] with extracted address or remove
+    if (results.jobDetails?.address) {
+      cleanedText = cleanedText.replace(/\[COMPANY ADDRESS\]/gi, results.jobDetails.address);
+    } else {
+      cleanedText = cleanedText.replace(/\[COMPANY ADDRESS\]/gi, '');
+    }
+    
+    // Remove any remaining placeholders
+    cleanedText = cleanedText.replace(/\[(.*?)\]/g, '').replace(/\n\n\n/g, '\n\n');
+    
+    return cleanedText;
   };
 
   const formatResumeForATS = (text) => {
@@ -53,13 +81,27 @@ export default function ResultsDisplay({ results }) {
   };
 
   const handleDownloadResume = () => {
-    generateProfessionalResumePDF(finalResume, 'Tailored_Resume', false);
+    try {
+      const success = generateProfessionalResumePDF(finalResume, 'Tailored_Resume', false);
+      if (success) {
+        console.log('Resume PDF downloaded successfully');
+      }
+    } catch (error) {
+      console.error('Error downloading resume:', error);
+      alert('Failed to download resume. Please try again.');
+    }
   };
 
   const handleDownloadCoverLetter = () => {
-    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const coverLetterWithDate = `${today}\n\n${finalCoverLetter}`;
-    generateCoverLetterPDF(coverLetterWithDate, false);
+    try {
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      const coverLetterWithDate = `${today}\n\n${finalCoverLetter}`;
+      generateCoverLetterPDF(coverLetterWithDate, false);
+      console.log('Cover letter PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading cover letter:', error);
+      alert('Failed to download cover letter. Please try again.');
+    }
   };
 
   return (
@@ -98,7 +140,26 @@ export default function ResultsDisplay({ results }) {
             <h3 className="text-base font-bold text-gray-900">Tailored Resume</h3>
           </div>
           <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-white/40 border border-white/40 p-4 rounded-lg max-h-60 overflow-y-auto">{finalResume}</pre>
-          <button onClick={handleDownloadResume} className="w-full px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download Resume</button>
+          <button 
+            onClick={handleDownloadResume} 
+            disabled={isDownloadingResume}
+            className={`w-full px-4 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 ${
+              isDownloadingResume 
+                ? 'bg-primary-400 cursor-not-allowed text-white' 
+                : 'bg-primary-600 hover:bg-primary-700 text-white'
+            }`}>
+            {isDownloadingResume ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Download Resume</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Cover Letter Card */}
@@ -110,7 +171,26 @@ export default function ResultsDisplay({ results }) {
             <h3 className="text-base font-bold text-gray-900">Cover Letter</h3>
           </div>
           <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 leading-relaxed bg-white/40 border border-white/40 p-4 rounded-lg max-h-60 overflow-y-auto">{finalCoverLetter}</pre>
-          <button onClick={handleDownloadCoverLetter} className="w-full px-4 py-2.5 rounded-lg bg-primary-600 text-white hover:bg-primary-700 font-bold text-sm">Download Letter</button>
+          <button 
+            onClick={handleDownloadCoverLetter} 
+            disabled={isDownloadingLetter}
+            className={`w-full px-4 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 ${
+              isDownloadingLetter 
+                ? 'bg-primary-400 cursor-not-allowed text-white' 
+                : 'bg-primary-600 hover:bg-primary-700 text-white'
+            }`}>
+            {isDownloadingLetter ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Download Cover Letter</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

@@ -152,134 +152,27 @@ const icons = {
   location: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAHZJREFUOE9jZKAQMFKon4F4CyzHSAgAnz4s+A/F/4T4Hw1/NPxH438y/IfxP5L/V/B/I/83/j/D/2v+3wB/Bf5f9v8D/1/8/wP/X/z/A/9f/H8A/wD/X/z/A/8A/wD/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwz/Xwx/AQAASs4z3d2/9ZAAAAAASUVORK5CYII='
 };
 
-export function generateProfessionalResumePDF(resumeContent, filename = 'Professional_Resume', asBlob = false) {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  // --- TEMPLATE STYLING ---
-  const NAME_FONT_SIZE = 24;
-  const SUBTITLE_FONT_SIZE = 10;
-  const SECTION_HEADING_SIZE = 9;
-  const BODY_FONT_SIZE = 9;
-  const CONTACT_FONT_SIZE = 9;
-
-  const FONT_FAMILY_HEAVY = 'Helvetica'; // For name
-  const FONT_FAMILY_NORMAL = 'Helvetica'; // For body
-
-  const PRIMARY_COLOR = '#003366'; // Dark blue
-  const TEXT_COLOR = '#333333';
-  const LIGHT_TEXT_COLOR = '#666666';
-
-  const LEFT_MARGIN = 15;
-  const RIGHT_MARGIN = 15;
-  const TOP_MARGIN = 15;
-  const BOTTOM_MARGIN = 15;
-  const COLUMN_GAP = 10;
-  const LEFT_COLUMN_WIDTH = 60;
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const rightColumnWidth = pageWidth - LEFT_MARGIN - RIGHT_MARGIN - LEFT_COLUMN_WIDTH - COLUMN_GAP;
-  const rightColumnX = LEFT_MARGIN + LEFT_COLUMN_WIDTH + COLUMN_GAP;
-
-  let leftY = TOP_MARGIN + 30; // Start Y position for left column
-  let rightY = TOP_MARGIN + 30; // Start Y position for right column
-
-  // --- HEADER ---
-  const lines = resumeContent.split('\n');
-  const name = lines.shift() || 'Your Name';
-  const subtitle = lines.shift() || 'Your Professional Title';
-  const contactInfo = lines.splice(0, 3);
-
-  doc.setFont(FONT_FAMILY_HEAVY, 'bold');
-  doc.setFontSize(NAME_FONT_SIZE);
-  doc.setTextColor(PRIMARY_COLOR);
-  doc.text(name.toUpperCase(), LEFT_MARGIN, TOP_MARGIN + 5);
-
-  doc.setFont(FONT_FAMILY_NORMAL, 'normal');
-  doc.setFontSize(SUBTITLE_FONT_SIZE);
-  doc.setTextColor(TEXT_COLOR);
-  doc.text(subtitle, LEFT_MARGIN, TOP_MARGIN + 12);
-
-  doc.setDrawColor(PRIMARY_COLOR);
-  doc.setLineWidth(0.5);
-  doc.line(LEFT_MARGIN, TOP_MARGIN + 15, pageWidth - RIGHT_MARGIN, TOP_MARGIN + 15);
-
-  doc.setFontSize(CONTACT_FONT_SIZE);
-  doc.setTextColor(LIGHT_TEXT_COLOR);
-  let contactX = LEFT_MARGIN;
-  const contactItems = contactInfo.map(info => {
-    if (info.includes('@')) return { text: info, icon: icons.email };
-    if (info.includes('linkedin')) return { text: info, icon: icons.linkedin };
-    if (info.match(/\d{3}/)) return { text: info, icon: icons.phone };
-    return { text: info, icon: icons.location };
-  });
-
-  contactItems.forEach(item => {
-    if (item.text.trim()) {
-      doc.addImage(item.icon, 'PNG', contactX, TOP_MARGIN + 19, 4, 4);
-      doc.text(item.text.trim(), contactX + 5, TOP_MARGIN + 22);
-      contactX += doc.getTextWidth(item.text.trim()) + 15;
+/**
+ * Simple, reliable ATS-optimized PDF generator
+ * Single column layout that works without freezing
+ */
+export async function generateProfessionalResumePDF(resumeContent, filename = 'Professional_Resume', asBlob = false) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Use setTimeout to prevent UI freeze
+      setTimeout(() => {
+        try {
+          // Use the simple generatePDF function which works reliably
+          const result = generatePDF(resumeContent, filename, '', asBlob);
+          resolve(result);
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+          reject(error);
+        }
+      }, 50);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      reject(error);
     }
   });
-
-  // --- BODY ---
-  const sections = {};
-  let currentSection = 'SUMMARY'; // Default section
-  lines.forEach(line => {
-    const trimmedLine = line.trim();
-    if (trimmedLine.endsWith(':') && trimmedLine.length < 30) {
-      currentSection = trimmedLine.slice(0, -1).toUpperCase();
-      sections[currentSection] = sections[currentSection] || [];
-    } else if (trimmedLine) {
-      sections[currentSection] = sections[currentSection] || [];
-      sections[currentSection].push(line);
-    }
-  });
-
-  const drawSection = (title, content, column) => {
-    let yPos = column === 'left' ? leftY : rightY;
-    const xPos = column === 'left' ? LEFT_MARGIN : rightColumnX;
-    const colWidth = column === 'left' ? LEFT_COLUMN_WIDTH : rightColumnWidth;
-
-    doc.setFont(FONT_FAMILY_HEAVY, 'bold');
-    doc.setFontSize(SECTION_HEADING_SIZE);
-    doc.setTextColor(PRIMARY_COLOR);
-    doc.text(title, xPos, yPos);
-    doc.setDrawColor(PRIMARY_COLOR);
-    doc.setLineWidth(0.2);
-    doc.line(xPos, yPos + 1, xPos + colWidth, yPos + 1);
-    yPos += 5;
-
-    doc.setFont(FONT_FAMILY_NORMAL, 'normal');
-    doc.setFontSize(BODY_FONT_SIZE);
-    doc.setTextColor(TEXT_COLOR);
-
-    content.forEach(line => {
-      const splitLines = doc.splitTextToSize(line, colWidth);
-      splitLines.forEach(l => {
-        doc.text(l, xPos, yPos);
-        yPos += 4;
-      });
-    });
-    yPos += 5;
-
-    if (column === 'left') leftY = yPos;
-    else rightY = yPos;
-  };
-
-  // Draw sections into columns
-  if (sections['SUMMARY']) drawSection('SUMMARY', sections['SUMMARY'], 'left');
-  if (sections['PROJECTS']) drawSection('PROJECTS', sections['PROJECTS'], 'left');
-  if (sections['KEY ACHIEVEMENTS']) drawSection('KEY ACHIEVEMENTS', sections['KEY ACHIEVEMENTS'], 'left');
-  if (sections['SKILLS']) drawSection('SKILLS', sections['SKILLS'], 'left');
-  
-  if (sections['EXPERIENCE']) drawSection('EXPERIENCE', sections['EXPERIENCE'], 'right');
-  if (sections['EDUCATION']) drawSection('EDUCATION', sections['EDUCATION'], 'right');
-
-  // --- FOOTER / SAVE ---
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-  if (asBlob) {
-    return doc.output('blob');
-  }
-  const finalFilename = `${filename}_${timestamp}.pdf`;
-  doc.save(finalFilename);
 }

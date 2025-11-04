@@ -9,8 +9,9 @@ import OriginalResumesFooter from './components/OriginalResumesFooter';
 import ResumePreviewStep from './components/ResumePreviewStep';
 import CoverLetterPreviewStep from './components/CoverLetterPreviewStep';
 import DownloadStep from './components/DownloadStep';
+import TemplateSelector from './components/TemplateSelector';
 import { tailorResume } from './utils/api';
-import { generateProfessionalResumePDF, generateCoverLetterPDF } from './utils/pdfGenerator';
+import { generateWithTemplate } from './utils/pdfTemplates';
 
 function App() {
   const [step, setStep] = useState(1);
@@ -21,6 +22,7 @@ function App() {
   const [jobDescription, setJobDescription] = useState('');
   const [editedResume, setEditedResume] = useState('');
   const [editedCoverLetter, setEditedCoverLetter] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('modern'); // Default to modern
   const abortControllerRef = useRef(null);
 
   // Original resumes state
@@ -51,7 +53,7 @@ function App() {
   const handlePrevStep = () => setStep(step - 1);
 
   const handleSubmit = async () => {
-    setStep(3); // Move to generating step
+    setStep(4); // Move to generating step (after template selection)
     setIsLoading(true);
     setShowProgress(true);
     setError(null);
@@ -64,7 +66,7 @@ function App() {
       setResults(data);
       setEditedResume(data.tailoredResume);
       setEditedCoverLetter(data.coverLetter);
-      setStep(4); // Move to resume preview step
+      setStep(5); // Move to resume preview step
     } catch (err) {
       setError(err.message || 'Failed to generate results.');
       setStep(1); // Go back to start on error
@@ -92,6 +94,7 @@ function App() {
     setError(null);
     setShowProgress(false);
     setSelectedResume(null);
+    setSelectedTemplate('modern');
     setStep(1);
   };
 
@@ -140,31 +143,39 @@ function App() {
             <JobDescriptionInput onSubmit={handleNextStep} isLoading={isLoading} onChangeJD={setJobDescription} value={jobDescription} />
           )}
           {step === 2 && (
-            <ResumeSelector resumes={originalResumes} selectedResume={selectedResume} onSelect={setSelectedResume} isLoading={isLoadingResumes} onNext={handleSubmit} onBack={handlePrevStep} />
+            <ResumeSelector resumes={originalResumes} selectedResume={selectedResume} onSelect={setSelectedResume} isLoading={isLoadingResumes} onNext={handleNextStep} onBack={handlePrevStep} />
           )}
-          {step === 3 && <ProgressBar isVisible={showProgress} onCancel={handleCancel} />}
-          {step === 4 && results && (
+          {step === 3 && (
+            <TemplateSelector 
+              selectedTemplate={selectedTemplate}
+              onTemplateSelect={setSelectedTemplate}
+              onNext={handleSubmit}
+              onBack={handlePrevStep}
+            />
+          )}
+          {step === 4 && <ProgressBar isVisible={showProgress} onCancel={handleCancel} />}
+          {step === 5 && results && (
             <ResumePreviewStep 
               resumeContent={editedResume} 
               onNext={handleNextStep} 
-              onBack={() => setStep(2)} 
+              onBack={() => setStep(3)} 
               onContentChange={setEditedResume}
-              pdfGenerator={async (content) => await generateProfessionalResumePDF(content, 'resume', true)}
+              pdfGenerator={async (content) => await generateWithTemplate(content, 'resume', selectedTemplate, true)}
             />
           )}
-          {step === 5 && results && (
+          {step === 6 && results && (
             <CoverLetterPreviewStep 
               coverLetterContent={editedCoverLetter} 
               onNext={handleNextStep} 
               onBack={handlePrevStep} 
               onContentChange={setEditedCoverLetter}
-              pdfGenerator={async (content) => await generateCoverLetterPDF(content, true)}
+              pdfGenerator={async (content) => await generateWithTemplate(content, 'cover_letter', selectedTemplate, true)}
             />
           )}
-          {step === 6 && results && (
+          {step === 7 && results && (
             <DownloadStep 
-              onDownloadResume={() => generateProfessionalResumePDF(editedResume, 'Tailored_Resume')}
-              onDownloadCoverLetter={() => generateCoverLetterPDF(editedCoverLetter)}
+              onDownloadResume={() => generateWithTemplate(editedResume, 'Tailored_Resume', selectedTemplate)}
+              onDownloadCoverLetter={() => generateWithTemplate(editedCoverLetter, 'Cover_Letter', selectedTemplate)}
               onBack={handlePrevStep} 
             />
           )}
