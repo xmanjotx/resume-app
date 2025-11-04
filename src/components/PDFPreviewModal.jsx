@@ -2,27 +2,44 @@ import { useEffect, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { X, Loader2, Download, Copy } from 'lucide-react';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Use classic worker (JS) instead of ESM to avoid fallback to main-thread parsing in some bundlers
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 export default function PDFPreviewModal({ isOpen, onClose, title, content, pdfGenerator, onDownload, onCopy, copied }) {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [numPages, setNumPages] = useState(null);
+  const [showAllPages, setShowAllPages] = useState(false);
 
   useEffect(() => {
     if (isOpen && !pdfUrl && pdfGenerator) {
       setPdfLoading(true);
       const generate = async () => {
-        const pdfBlob = await pdfGenerator(content);
-        setPdfUrl(URL.createObjectURL(pdfBlob));
-        setPdfLoading(false);
+        try {
+          const pdfBlob = await pdfGenerator(content);
+          const url = URL.createObjectURL(pdfBlob);
+          setPdfUrl(url);
+        } catch (e) {
+          console.error('Failed to generate PDF preview', e);
+        } finally {
+          setPdfLoading(false);
+        }
       };
       generate();
     }
     if (!isOpen) {
-      setPdfUrl(null); // Reset when closed
+      // cleanup any existing object URL when closing
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
     }
   }, [isOpen, pdfUrl, content, pdfGenerator]);
+
+  // Revoke object URL on unmount or when new one is created
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -53,9 +70,20 @@ export default function PDFPreviewModal({ isOpen, onClose, title, content, pdfGe
               <span className="text-base font-medium">Generating PDF Preview...</span>
             </div>
           ) : pdfUrl ? (
-            <Document file={pdfUrl} className="flex justify-center" onLoadSuccess={({ numPages }) => setNumPages(numPages)}>
-              {Array.from(new Array(numPages), (el, index) => (
-                <Page key={`page_${index + 1}`} pageNumber={index + 1} renderTextLayer={false} width={Math.min(800, window.innerWidth - 100)} className="mb-4" />
+            <Document
+              file={pdfUrl}
+              className="flex flex-col items-center"
+              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+              onLoadError={(err) => console.error('PDF load error:', err)}
+            >
+              {Array.from(new Array(showAllPages ? numPages : Math.min(2, numPages || 0)), (el, index) => (
+                <Page
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1}
+                  renderTextLayer={false}
+                  width={Math.min(800, window.innerWidth - 100)}
+                  className="mb-4"
+                />
               ))}
             </Document>
           ) : (
@@ -64,7 +92,19 @@ export default function PDFPreviewModal({ isOpen, onClose, title, content, pdfGe
         </div>
 
         {/* Footer Actions */}
-        <div className="p-5 border-t border-white/30 bg-white/20 flex justify-end gap-3">
+        <div className="p-5 border-t border-white/30 bg-white/20 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-gray-600">
+            {numPages ? `${showAllPages ? numPages : Math.min(2, numPages)} of ${numPages} page(s) shown` : ''}
+          </div>
+          <div className="flex gap-3 ml-auto">
+            {numPages > 2 && (
+              <button
+                onClick={() => setShowAllPages((s) => !s)}
+                className="px-4 py-2.5 bg-white/40 text-gray-800 rounded-lg hover:bg-white/60 transition-colors text-sm font-semibold"
+              >
+                {showAllPages ? 'Show fewer pages' : 'Show all pages'}
+              </button>
+            )}
           <button
             onClick={onCopy}
             className="px-5 py-2.5 bg-white/40 text-gray-800 rounded-lg hover:bg-white/60 transition-colors flex items-center gap-2 font-semibold text-sm"
@@ -79,6 +119,7 @@ export default function PDFPreviewModal({ isOpen, onClose, title, content, pdfGe
             <Download className="w-4 h-4" />
             Download PDF
           </button>
+          </div>
         </div>
       </div>
     </div>
